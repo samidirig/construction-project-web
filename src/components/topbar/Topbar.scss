@@ -1,0 +1,48 @@
+.topbar-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    cursor: pointer;
+    color: #FF9843;
+    text-decoration: none;
+    white-space: nowrap;
+
+    &:hover {
+      background-color: lighten(#FF9843, 10%);
+      color: #3468C0;
+    }
+
+    &.active {
+      background-color: #FF9843;
+      color: #3468C0;
+
+      .sidebar-icon {
+        fill: #3468C0;
+      }
+    }
+
+    .sidebar-icon {
+      margin-right: 10px;
+      fill: #FF9843;
+    }
+
+    .sidebar-text {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease-out;
+      font-size: 14px;
+      color:#3468C0;
+    }
+  }
+
+.topbar-icon {
+    margin-right: 10px;
+    fill: #FF9843;
+}
+
+.topbar-text {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    font-size: 14px;
+}
