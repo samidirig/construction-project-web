@@ -1,4 +1,5 @@
-import { React, useState, useCallback, useRef, useEffect } from 'react'
+import { React, useState, useCallback, useRef } from 'react'
+import { useNavigate } from 'react-router-dom';
 import { GoogleMap, useLoadScript, Marker, InfoWindow } from '@react-google-maps/api'
 import mapStyle from '../mapStyle';
 import './MapHome.scss';
@@ -43,6 +44,7 @@ export default function MapHome(props) {
         },
     } : {};
     //object Lists
+    const navigate = useNavigate();
     const worksites = props.worksiteList;
 
     const [selected, setSelected] = useState(null);
@@ -56,10 +58,13 @@ export default function MapHome(props) {
         setSelectedType("worksite");
     };
 
+    const handleNavigateToWorksites = () => {
+        navigate('/worksites');
+    };
+
     const handleMapTypeChange = () => {
         setMapType(mapType === 'roadmap' ? 'satellite' : 'roadmap');
     };
-
 
     //get map object ref
     const mapRef = useRef(null);
@@ -131,7 +136,7 @@ export default function MapHome(props) {
                                 <h2 style={{ margin: '0px', marginBottom: '5px', color: '#ff9843' }}> {selected.name}</h2>
                                 <h3 style={{ margin: '0px', marginBottom: '5px', color: '#000' }}> Başlangıç Tarihi: {formatTimestampToDate(selected.startDate)}</h3>
                                 <h3 style={{ margin: '0px', marginBottom: '5px', color: '#000' }}> Bitiş Tarihi: {formatTimestampToDate(selected.finishDate)}</h3>
-                                <Button href='/worksites'>Şantiye Detay</Button>
+                                <Button onClick={handleNavigateToWorksites}>Şantiye Detay</Button>
                             </div>
                         </InfoWindow>
                     )}

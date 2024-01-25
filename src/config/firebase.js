@@ -91,7 +91,6 @@ export const getCompanyByManagerId = async () => {
             if (!querySnapshot.empty) {
                 const companyDoc = querySnapshot.docs[0];
                 const companyData = companyDoc.data();
-                console.log('Company Data:', companyData);
                 return companyData;
             } else {
                 console.log('No company found for the given managerId');
@@ -135,7 +134,8 @@ export const getCompanyIdByAuthUser = async () => {
 
 export const getCompanyProjects = async () => {
     try {
-        const companyId = localStorage.getItem("companyId");
+        const company = await getCompanyByManagerId();
+        const companyId = company.id;
 
         if (companyId) {
             const projectsRef = collection(db, 'projects');
@@ -164,7 +164,8 @@ export const getCompanyProjects = async () => {
 
 export const getCompanyWorksites = async () => {
     try {
-        const companyId = localStorage.getItem("companyId");
+        const company = await getCompanyByManagerId();
+        const companyId = company.id;
 
         if (companyId) {
             const worksitesRef = collection(db, 'worksites');
@@ -187,6 +188,69 @@ export const getCompanyWorksites = async () => {
         }
     } catch (error) {
         console.error('Error getting worksites information:', error);
+        return null;
+    }
+};
+
+export const getCompanyPersonnels = async () => {
+    try {
+        const company = await getCompanyByManagerId();
+        const companyId = company.id;
+        // const personnelsIds = company.personnels || [];
+
+        if (companyId) {
+            // Bu companyId'li dökümanda personnels array field'ındaki id'leri alıp.
+            const personnelsIds = company.personnels || [];
+
+            // companyId'ye ve personnelsIds'ye göre kullanıcıları filtrele
+            const usersQuery = query(
+                collection(db, 'users'),
+                where('companyId', '==', companyId),
+                where('role', '==', "personnel"),
+                where('id', 'in', personnelsIds)
+            );
+
+            const querySnapshot = await getDocs(usersQuery);
+
+            // Kullanıcı bilgilerini al
+            const personnels = querySnapshot.docs.map((doc) => doc.data());
+
+            return personnels;
+        } else {
+            console.log('companyId is not found');
+            return null;
+        }
+    } catch (error) {
+        console.error('Error getting personnels information:', error);
+        return null;
+    }
+};
+
+export const getCompanyWaitingPersonnels = async () => {
+    try {
+        const company = await getCompanyByManagerId();
+        const companyId = company.id;
+
+        if (companyId) {
+            // companyId ve isConfirmedCompany değerine göre kullanıcıları filtrele
+            const usersQuery = query(
+                collection(db, 'users'),
+                where('companyId', '==', companyId),
+                where('isConfirmedCompany', '==', false)
+            );
+
+            const querySnapshot = await getDocs(usersQuery);
+
+            // Kullanıcı bilgilerini al
+            const personnels = querySnapshot.docs.map((doc) => doc.data());
+
+            return personnels;
+        } else {
+            console.log('companyId is not found');
+            return null;
+        }
+    } catch (error) {
+        console.error('Error getting personnels information:', error);
         return null;
     }
 };
@@ -286,6 +350,28 @@ export const getUserRoleByEmail = async (email) => {
     }
 };
 
+export const setPersonnelStatuConfirm = async (personnelId) => {
+    console.log(personnelId);
+    const company = await getCompanyByManagerId();
+    const companyId = company.id;
+    try {
+        const userDocRef = doc(db, 'users', personnelId);
+        await updateDoc(userDocRef, {
+            isConfirmedCompany: true,
+        });
+
+        const companyDocRef = doc(db, 'companies', companyId);
+        await updateDoc(companyDocRef, {
+            personnels: arrayUnion(personnelId),
+        });
+
+        return true;
+    } catch (error) {
+        console.error('Kullanıcı rolü sorgulanırken bir hata oluştu:', error);
+        return false;
+    }
+};
+
 export const sendPasswordResetEmailToUser = async (email) => {
     try {
         await sendPasswordResetEmail(auth, email);
@@ -293,5 +379,36 @@ export const sendPasswordResetEmailToUser = async (email) => {
     } catch (error) {
         console.error('Parola sıfırlama maili gönderirken hata oluştu:', error);
         throw new Error('Parola sıfırlama maili gönderirken bir hata oluştu.');
+    }
+};
+
+export const updateUserInformation = async (name, surname, phone) => {
+    try {
+        const userId = auth.currentUser;
+        const userRef = doc(db, 'users', userId.uid);
+        await updateDoc(userRef, {
+            name,
+            surname,
+            phone,
+        });
+        console.log('User information updated successfully.');
+    } catch (error) {
+        console.error('Error updating university information:', error);
+        throw error;
+    }
+};
+
+export const updateCompanyInformation = async (companyId, name, email, phone) => {
+    try {
+        const companyRef = doc(db, 'companies', companyId);
+        await updateDoc(companyRef, {
+            name,
+            email,
+            phone,
+        });
+        console.log('Company information updated successfully.');
+    } catch (error) {
+        console.error('Error updating university information:', error);
+        throw error;
     }
 };

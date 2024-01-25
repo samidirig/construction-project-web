@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 import { logOut } from '../redux/authSlice';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import {
-  getAuthUserInformation, getCompanyByManagerId,
+  getAuthUserInformation, getCompanyByManagerId, updateCompanyInformation, updateUserInformation,
 } from '../config/firebase';
 import {
   Dialog,
@@ -16,6 +16,7 @@ import {
   Typography,
   TextField,
   Avatar,
+  InputAdornment,
 } from '@mui/material';
 import Background1 from "../assets/images/background_1.jpg"
 import { useWindowSizeWidth } from '../config/hooks';
@@ -23,7 +24,10 @@ import { useWindowSizeWidth } from '../config/hooks';
 export default function Profile() {
   const dispatch = useDispatch();
   const [userData, setUserData] = useState({});
+  const [tempUserData, setTempUserData] = useState({});
   const [companyData, setCompanyData] = useState({});
+  const [tempCompanyData, setTempCompanyData] = useState({});
+  const [isEditMode, setIsEditMode] = useState(false);
   const [confirmSignOutDialogOpen, setConfirmSignOutDialogOpen] = useState(false);
   const windowScreenWidth = useWindowSizeWidth();
   const handleLogout = () => {
@@ -54,6 +58,48 @@ export default function Profile() {
 
   }, []);
   console.log(companyData);
+
+  const handleSaveProfile = async () => {
+    try {
+      let phone = companyData.phone;
+      if (phone && !phone.startsWith('90')) {
+        phone = `90${phone}`;
+      }
+      await updateUserInformation(
+        userData.name,
+        userData.surname,
+        phone
+      );
+      await updateCompanyInformation(
+        companyData.id,
+        companyData.name,
+        companyData.email,
+        phone,
+      );
+      setIsEditMode(false);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+    }
+  };
+
+  const handleEditProfile = () => {
+    setTempUserData(userData);
+    setTempCompanyData(companyData);
+    setIsEditMode(true);
+  };
+
+  const handleCancelEditProfile = () => {
+    if (tempUserData && tempCompanyData) {
+      setUserData(tempUserData);
+      setCompanyData(tempCompanyData);
+    } else {
+      setIsEditMode(false);
+      window.location.reload();
+    }
+    setTempUserData({});
+    setIsEditMode(false);
+  }
+
   return (
     <div>
       <div>
@@ -102,31 +148,77 @@ export default function Profile() {
                 alignItems: 'center',
                 gap: 10,
               }}>
-                <Button
-                  variant="contained"
-                  //onClick={handleLogout}
-                  sx={{
-                    width: 150,
-                    height: 40,
-                    textAlign: "center",
-                    bgcolor: "rgba(255, 152, 67, 0.9)",
-                    color: "#fff",
-                    borderRadius: '50px',
-                    fontFamily: 'Arial, Helvatica, sans-serif',
-                    fontSize: '14px',
-                    cursor: 'pointer',
-                    textTransform: 'inherit',
-                    '&:hover': {
-                      bgcolor: "#FF9843",
-                      color: "#ffffff",
-                      boxShadow: "0px 0 10px rgba(52, 104, 192, 0.7)",
-                      transform: 'scale(1.05)',
-                    }
-                  }}
-                >
-                  Profili Düzenle
-                </Button>
-                
+
+                {isEditMode ? (
+                  <>
+                    <Button variant="contained" onClick={handleSaveProfile} sx={{
+                      width: 150,
+                      height: 40,
+                      textAlign: "center",
+                      bgcolor: "rgba(255, 152, 67, 0.9)",
+                      color: "#fff",
+                      borderRadius: '50px',
+                      fontFamily: 'Arial, Helvatica, sans-serif',
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                      textTransform: 'inherit',
+                      '&:hover': {
+                        bgcolor: "#FF9843",
+                        color: "#ffffff",
+                        boxShadow: "0px 0 10px rgba(52, 104, 192, 0.7)",
+                        transform: 'scale(1.05)',
+                      }
+                    }}>
+                      Bilgileri Kaydet
+                    </Button>
+                    <Button variant="contained" onClick={handleCancelEditProfile} sx={{
+                      width: 150,
+                      height: 40,
+                      textAlign: "center",
+                      bgcolor: "rgba(255, 152, 67, 0.9)",
+                      color: "#fff",
+                      borderRadius: '50px',
+                      fontFamily: 'Arial, Helvatica, sans-serif',
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                      textTransform: 'inherit',
+                      '&:hover': {
+                        bgcolor: "#FF9843",
+                        color: "#ffffff",
+                        boxShadow: "0px 0 10px rgba(52, 104, 192, 0.7)",
+                        transform: 'scale(1.05)',
+                      }
+                    }}>
+                      İptal
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    variant="contained"
+                    onClick={handleEditProfile}
+                    sx={{
+                      width: 150,
+                      height: 40,
+                      textAlign: "center",
+                      bgcolor: "rgba(255, 152, 67, 0.9)",
+                      color: "#fff",
+                      borderRadius: '50px',
+                      fontFamily: 'Arial, Helvatica, sans-serif',
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                      textTransform: 'inherit',
+                      '&:hover': {
+                        bgcolor: "#FF9843",
+                        color: "#ffffff",
+                        boxShadow: "0px 0 10px rgba(52, 104, 192, 0.7)",
+                        transform: 'scale(1.05)',
+                      }
+                    }}
+                  >
+                    Profili Düzenle
+                  </Button>
+                )}
+
                 <Button
                   variant="contained"
                   onClick={handleLogout}
@@ -218,31 +310,55 @@ export default function Profile() {
               <Typography variant='h6' sx={{ pl: 5, color: 'grey' }}>
                 Firma Bilgileri
               </Typography>
-              
+
               <Stack sx={{ width: '100%', height: 'auto', display: 'flex', flexDirection: 'row', gap: '10px', px: 5 }}>
                 <TextField
                   label="Firma Email"
                   value={companyData.email || ''}
+                  onChange={(e) =>
+                    setCompanyData((prevData) => ({
+                      ...prevData,
+                      email: e.target.value,
+                    }))
+                  }
                   fullWidth
                   margin="none"
-                  disabled
+                  disabled={!isEditMode}
                 />
                 <TextField
                   label="Firma Telefon"
-                  value={companyData.phone || ''}
+                  value={companyData.phone || 'Kayıtlı Değil'}
+                  onChange={(e) => {
+                    let newValue = e.target.value.replace(/\D/g, ''); // Sadece rakam karakterlerini alır
+                    if (newValue.startsWith('90')) {
+                      newValue = newValue.slice(0, 12); // "90" ile başlıyorsa, 12 karakter kabul eder
+                    } else {
+                      newValue = newValue.slice(0, 10); // "90" ile başlamıyorsa, 10 karakter kabul eder
+                    }
+                    setCompanyData((prevData) => ({
+                      ...prevData,
+                      phone: newValue,
+                    }));
+                  }}
                   fullWidth
                   margin="none"
-                  disabled
+                  disabled={!isEditMode}
                 />
               </Stack>
 
               <Stack sx={{ width: '100%', height: 'auto', display: 'flex', flexDirection: 'row', gap: '10px', px: 5 }}>
                 <TextField
-                  label="Firma İsmi"
+                  label="Firma İsim"
                   value={companyData.name || ''}
+                  onChange={(e) =>
+                    setCompanyData((prevData) => ({
+                      ...prevData,
+                      name: e.target.value,
+                    }))
+                  }
                   fullWidth
                   margin="normal"
-                  disabled
+                  disabled={!isEditMode}
                 />
                 <TextField
                   label="Yönetici"
@@ -301,6 +417,9 @@ export default function Profile() {
                     {"A"}
                   </Avatar>
                 </Tooltip>
+                <Typography variant='h6' sx={{ pl: 5, color: 'grey' }}>
+                  {userData.role === 'companyManager' ? 'Yönetici' : 'Belirsiz'}
+                </Typography>
               </Stack>
 
               <Typography variant='h6' sx={{ pl: 5, color: 'grey' }}>
@@ -311,30 +430,54 @@ export default function Profile() {
                 <TextField
                   label="İsim"
                   value={userData.name || ''}
+                  onChange={(e) =>
+                    setUserData((prevData) => ({
+                      ...prevData,
+                      name: e.target.value,
+                    }))
+                  }
                   fullWidth
                   margin="none"
-                  disabled
+                  disabled={!isEditMode}
                 />
                 <TextField
                   label="Soyisim"
                   value={userData.surname || ''}
+                  onChange={(e) =>
+                    setUserData((prevData) => ({
+                      ...prevData,
+                      surname: e.target.value,
+                    }))
+                  }
                   fullWidth
                   margin="none"
-                  disabled
+                  disabled={!isEditMode}
                 />
               </Stack>
 
               <Stack sx={{ width: '100%', height: 'auto', display: 'flex', flexDirection: 'row', gap: '10px', px: 5 }}>
                 <TextField
-                  label="Email"
-                  value={userData.email || ''}
+                  label="Telefon Numarası"
+                  value={userData.phone || 'Kayıtlı Değil'}
+                  onChange={(e) => {
+                    let newValue = e.target.value.replace(/\D/g, ''); // Sadece rakam karakterlerini alır
+                    if (newValue.startsWith('90')) {
+                      newValue = newValue.slice(0, 12); // "90" ile başlıyorsa, 12 karakter kabul eder
+                    } else {
+                      newValue = newValue.slice(0, 10); // "90" ile başlamıyorsa, 10 karakter kabul eder
+                    }
+                    setUserData((prevData) => ({
+                      ...prevData,
+                      phone: newValue,
+                    }));
+                  }}
                   fullWidth
                   margin="none"
-                  disabled
+                  disabled={!isEditMode}
                 />
                 <TextField
-                  label="Rol"
-                  value={userData.role === 'companyManager' ? 'Yönetici' : 'Belirsiz'}
+                  label="Email"
+                  value={userData.email || ''}
                   fullWidth
                   margin="none"
                   disabled

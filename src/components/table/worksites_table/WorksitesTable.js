@@ -30,7 +30,7 @@ export default function WorksitesTable({ worksites }) {
     );
 
     return (
-        <div>
+        <div style={{ width: '100%' }}>
             <TableContainer component={Paper}>
                 <Table>
                     <TableHead>

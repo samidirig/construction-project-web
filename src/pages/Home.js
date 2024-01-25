@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom';
 import MapHome from '../components/map/map_home/MapHome'
 import { Button, CircularProgress, Stack, Typography } from '@mui/material';
 import { useWindowSizeWidth } from '../config/hooks';
-import { getAuthUserInformation, getCompanyIdByAuthUser, getCompanyProjects, getCompanyWorksites } from '../config/firebase';
+import { getAuthUserInformation, getCompanyByManagerId, getCompanyIdByAuthUser, getCompanyProjects, getCompanyWorksites } from '../config/firebase';
 import WorksitesTable from '../components/table/worksites_table/WorksitesTable';
 import ProjectsTable from '../components/table/projects_table/ProjectsTable';
 
@@ -65,23 +66,32 @@ const buttonContent = {
 
 export default function Home() {
 
+  const navigate = useNavigate();
   const windowScreenWidth = useWindowSizeWidth();
   const [worksitesData, setWorksitesData] = useState([]);
   const [projectsData, setProjectsData] = useState([]);
-  // const [companyData, setCompanyData] = useState({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchData() {
-      // const company = await getCompanyByManagerId();
-      // setCompanyData(company);
+      try {
+        const projects = await getCompanyProjects();
+        setProjectsData(projects || []);
+      } catch (error) {
+        console.error('Error fetching projects:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
 
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    async function fetchData() {
       try {
         const worksites = await getCompanyWorksites();
         setWorksitesData(worksites || []);
-
-        const projects = await getCompanyProjects();
-        setProjectsData(projects || []);
       } catch (error) {
         console.error('Error fetching worksites:', error);
       } finally {
@@ -92,24 +102,13 @@ export default function Home() {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    const saveCompanyIdToLocal = async () => {
-      try {
-        const storedCompanyId = localStorage.getItem('companyId');
+  const handleNavigateToWorksites = () => {
+    navigate('/worksites');
+  };
 
-        if (storedCompanyId === null || storedCompanyId === undefined) {
-          const authUser = await getAuthUserInformation();
-          localStorage.setItem('companyId', authUser.companyId);
-        }
-      } catch (error) {
-        console.error('Error saving companyId to localStorage:', error);
-      }
-    };
-
-    saveCompanyIdToLocal();
-  }, []);
-
-  console.log(worksitesData);
+  const handleNavigateToProjects = () => {
+    navigate('/projects');
+  };
 
   return (
     <div>
@@ -117,21 +116,21 @@ export default function Home() {
       <Stack sx={{
         position: 'relative',
         width: '100%',
-        height: windowScreenWidth > 900 ? 400 : 500,
+        height: windowScreenWidth > 1150 ? 400 : 500,
         display: 'flex',
         borderRadius: '20px',
         flexDirection: 'row',
-        flexWrap: windowScreenWidth > 900 ? 'nowrap' : 'wrap',
+        flexWrap: windowScreenWidth > 1150 ? 'nowrap' : 'wrap',
         alignItems: 'flex-start',
         gap: '10px',
       }}>
-        {loading ? (
+        {loading && worksitesData.length > 0 ? (
           <CircularProgress size={50} />
         ) : (
           <Stack sx={{
             position: 'relative',
             width: '100%',
-            height: windowScreenWidth > 900 ? 400 : 500,
+            height: windowScreenWidth > 1150 ? 400 : 500,
             borderRadius: '20px',
           }}>
             <MapHome worksiteList={worksitesData} />
@@ -142,14 +141,14 @@ export default function Home() {
       {/* tables */}
       <Stack sx={{
         ...mainContent,
-        height: windowScreenWidth > 900 ? 400 : 500,
-        flexWrap: windowScreenWidth > 900 ? 'nowrap' : 'wrap',
+        height: windowScreenWidth > 1150 ? 400 : 500,
+        flexWrap: windowScreenWidth > 1150 ? 'nowrap' : 'wrap',
       }}>
 
         {/* projects table */}
         <Stack sx={{
           ...tableContent,
-          width: windowScreenWidth > 900 ? '50%' : '100%', // Güncellendi
+          width: windowScreenWidth > 1150 ? '50%' : '100%', // Güncellendi
         }}>
 
           <Stack sx={tableContentHeader}>
@@ -158,7 +157,7 @@ export default function Home() {
             </Typography>
 
             <Button
-              href='/projects'
+              onClick={handleNavigateToProjects}
               variant="contained"
               sx={buttonContent}
             >
@@ -189,7 +188,7 @@ export default function Home() {
         {/* worksites table */}
         <Stack sx={{
           ...tableContent,
-          width: windowScreenWidth > 900 ? '50%' : '100%', // Güncellendi
+          width: windowScreenWidth > 1150 ? '50%' : '100%', // Güncellendi
         }}>
 
           <Stack sx={tableContentHeader}>
@@ -198,7 +197,7 @@ export default function Home() {
             </Typography>
 
             <Button
-              href='/worksites'
+              onClick={handleNavigateToWorksites}
               variant="contained"
               sx={buttonContent}
             >

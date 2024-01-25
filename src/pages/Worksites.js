@@ -34,12 +34,8 @@ export default function Worksites() {
   useEffect(() => {
     const saveCompanyIdToLocal = async () => {
       try {
-        const storedCompanyId = localStorage.getItem('companyId');
-
-        if (storedCompanyId === null || storedCompanyId === undefined) {
-          const authUser = await getAuthUserInformation();
-          localStorage.setItem('companyId', authUser.companyId);
-        }
+        const authUser = await getAuthUserInformation();
+        localStorage.setItem('companyId', authUser.companyId);
       } catch (error) {
         console.error('Error saving companyId to localStorage:', error);
       }

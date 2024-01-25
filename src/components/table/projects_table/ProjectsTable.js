@@ -30,7 +30,7 @@ export default function ProjectsTable({ projects }) {
     );
 
     return (
-        <div>
+        <div style={{ width: '100%' }}>
             <TableContainer component={Paper}>
                 <Table>
                     <TableHead>
