@@ -1,6 +1,6 @@
 import { React, useState, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom';
-import { GoogleMap, useLoadScript, Marker, InfoWindow } from '@react-google-maps/api'
+import { GoogleMap, useLoadScript, MarkerF, InfoWindow } from '@react-google-maps/api'
 import mapStyle from '../mapStyle';
 import './MapHome.scss';
 import WorksiteIcon from "../../../assets/images/worksite_1.png";
@@ -104,7 +104,7 @@ export default function MapHome(props) {
             >
                 <>
                     {worksites.map((worksite) => (
-                        <Marker
+                        <MarkerF
                             key={worksite.id}
                             position={{
                                 lat: worksite.geopoint && worksite.geopoint.latitude,
@@ -141,7 +141,7 @@ export default function MapHome(props) {
                         </InfoWindow>
                     )}
                     {currentPosition && (
-                        <Marker color={"#011e30"} position={currentPosition} />
+                        <MarkerF color={"#011e30"} position={currentPosition} />
                     )}
                 </>
                 <div className="location-button" onClick={() => navigator.geolocation.getCurrentPosition(success)}>

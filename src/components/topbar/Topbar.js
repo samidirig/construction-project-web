@@ -41,6 +41,12 @@ export default function Topbar() {
             section: 'personnels'
         },
         {
+            display: 'Teslimatlar',
+            icon: <IoPersonOutline />,
+            to: '/deliveries',
+            section: 'deliveries'
+        },
+        {
             display: 'Profile',
             icon: <CgProfile />,
             to: '/profile',

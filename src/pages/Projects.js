@@ -3,6 +3,7 @@ import { Button, Card, CardContent, CircularProgress, Stack, Typography } from '
 import Background1 from '../assets/images/background_1.jpg';
 import { useWindowSizeWidth } from '../config/hooks';
 import { getAuthUserInformation, getCompanyByManagerId, getCompanyIdByAuthUser, getCompanyProjects } from '../config/firebase';
+import { orangeButtonContent } from '../style/utils';
 
 export default function Projects() {
   const windowScreenWidth = useWindowSizeWidth();
@@ -91,24 +92,7 @@ export default function Projects() {
           <Button
             variant="contained"
             //onClick={handleLogout}
-            sx={{
-              width: 150,
-              height: 40,
-              textAlign: "center",
-              bgcolor: "rgba(255, 152, 67, 0.9)",
-              color: "#fff",
-              borderRadius: '50px',
-              fontFamily: 'Arial, Helvatica, sans-serif',
-              fontSize: '14px',
-              cursor: 'pointer',
-              textTransform: 'inherit',
-              '&:hover': {
-                bgcolor: "#FF9843",
-                color: "#ffffff",
-                boxShadow: "0px 0 10px rgba(52, 104, 192, 0.7)",
-                transform: 'scale(1.05)',
-              }
-            }}
+            sx={orangeButtonContent}
           >
             Proje Oluştur
           </Button>

@@ -16,7 +16,6 @@ import {
   Typography,
   TextField,
   Avatar,
-  InputAdornment,
 } from '@mui/material';
 import Background1 from "../assets/images/background_1.jpg"
 import { useWindowSizeWidth } from '../config/hooks';
@@ -411,7 +410,7 @@ export default function Profile() {
                 alignItems: 'center',
                 justifyContent: 'center'
               }}>
-                <Tooltip title={"Ahmet Ak"} arrow >
+                <Tooltip title={userData.name + " " + userData.surname} arrow >
                   <Avatar sx={{ width: 100, height: 100, backgroundColor: 'rgba(52, 104, 192, 0.3)', textTransform: 'uppercase', color: '#011e30' }}>
                     {"A"}
                     {"A"}

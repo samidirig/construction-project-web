@@ -5,6 +5,7 @@ import MainLayout from "../layout/MainLayout";
 import Home from "../pages/Home";
 import Login from "../pages/Login";
 import Personnels from "../pages/Personnels";
+import Deliveries from "../pages/Deliveries";
 import Profile from "../pages/Profile";
 import Projects from '../pages/Projects'
 import Register from '../pages/Register'
@@ -24,6 +25,7 @@ export default function Router() {
         <Route element={<MainLayout />}>
           <Route exact path="/" element={<Home />} />
           <Route exact path="/personnels" element={<Personnels />} />
+          <Route exact path="/deliveries" element={<Deliveries />} />
           <Route exact path="/profile" element={<Profile />} />
           <Route exact path="/projects" element={<Projects />} />
           <Route exact path="/worksites" element={<Worksites />} />

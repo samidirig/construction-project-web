@@ -4,46 +4,12 @@ import { Button, Card, CardContent, CircularProgress, Stack, Typography } from '
 import Background1 from '../assets/images/background_1.jpg';
 import PersonnelsTable from '../components/table/personel_table/PersonnelTable';
 import { useWindowSizeWidth } from '../config/hooks';
-
-const mainContent = {
-  mt: 2,
-  position: 'relative',
-  width: '100%',
-  display: 'flex',
-  borderRadius: '20px',
-  flexDirection: 'row',
-  alignItems: 'flex-start',
-  gap: '10px',
-}
-
-const tableContent = {
-  position: 'relative',
-  height: "auto",
-  minHeight: 450,
-  display: 'flex',
-  borderRadius: '20px',
-  flexDirection: 'column',
-  alignItems: 'center',
-  boxShadow: "0px 0 10px rgba(52, 104, 192, 0.3)",
-  '& > *': {
-    width: '100%',
-  },
-}
-
-const tableContentHeader = {
-  width: '100%',
-  height: '60px',
-  position: 'absolute',
-  top: 0,
-  borderRadius: '20px 20px 0px 0px',
-  px: '30px',
-  mb: 2,
-  backgroundColor: 'rgba(255, 152, 67, 0.7)',
-  display: 'flex',
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-}
+import {
+  mainContent,
+  tableContent,
+  tableContentHeader,
+  // buttonContent,
+} from "../style/utils";
 
 export default function Personnels() {
 
@@ -161,7 +127,7 @@ export default function Personnels() {
         flexWrap: windowScreenWidth > 1150 ? 'nowrap' : 'wrap',
       }}>
 
-        {/* projects table */}
+        {/* personnels table */}
         <Stack sx={{
           ...tableContent,
           width: windowScreenWidth > 1150 ? '50%' : '100%', // Güncellendi
