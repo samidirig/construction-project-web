@@ -1,22 +1,11 @@
 import { initializeApp } from "firebase/app";
-import {
-  EmailAuthProvider,
-  createUserWithEmailAndPassword,
-  deleteUser,
-  getAuth,
-  onAuthStateChanged,
-  reauthenticateWithCredential,
-  sendPasswordResetEmail,
-  updatePassword,
-} from "firebase/auth";
+import { getAuth, sendPasswordResetEmail } from "firebase/auth";
 import { getAnalytics } from "firebase/analytics";
 import {
   getFirestore,
   collection,
-  onSnapshot,
   addDoc,
   doc,
-  GeoPoint,
   getDoc,
   query,
   where,
@@ -26,9 +15,9 @@ import {
   updateDoc,
   Timestamp,
   arrayUnion,
+  GeoPoint,
 } from "firebase/firestore";
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
-import { useEffect, useState } from "react";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCb5vBHVNRNRkU0IiJOypt1T_P_kHwLoeQ",
@@ -97,6 +86,90 @@ export const createNewDelivery = async (deliveryData) => {
   }
 };
 
+export const createNewVehicle = async (vehicleData) => {
+  try {
+    const vehiclesRef = collection(db, "vehicles");
+    const vehicleDocRef = await addDoc(vehiclesRef, vehicleData);
+
+    const vehicleId = vehicleDocRef.id;
+    const updatedVehicleData = {
+      ...vehicleData,
+      id: vehicleId,
+    };
+
+    await setDoc(doc(db, "vehicles", vehicleId), updatedVehicleData);
+  } catch (error) {
+    console.error("Error while creating new vehicle:", error);
+    if (error.code) {
+      console.error("Error code:", error.code);
+    }
+  }
+};
+
+export const createNewSupplier = async (supplierData) => {
+  try {
+    const suppliersRef = collection(db, "suppliers");
+    const supplierDocRef = await addDoc(suppliersRef, supplierData);
+
+    const supplierId = supplierDocRef.id;
+    const updatedSupplierData = {
+      ...supplierData,
+      id: supplierId,
+    };
+
+    await setDoc(doc(db, "suppliers", supplierId), updatedSupplierData);
+  } catch (error) {
+    console.error("Error while creating new supplier:", error);
+    if (error.code) {
+      console.error("Error code:", error.code);
+    }
+  }
+};
+
+export const createNewProject = async (projectData) => {
+  try {
+    const projectsRef = collection(db, "projects");
+    const projectDocRef = await addDoc(projectsRef, projectData);
+
+    const projectId = projectDocRef.id;
+    const updatedProjectData = {
+      ...projectData,
+      id: projectId,
+    };
+
+    await setDoc(doc(db, "projects", projectId), updatedProjectData);
+  } catch (error) {
+    console.error("Error while creating new project:", error);
+    if (error.code) {
+      console.error("Error code:", error.code);
+    }
+  }
+};
+
+export const createNewWorksite = async (worksiteData) => {
+  try {
+    const worksitesRef = collection(db, "worksites");
+    const worksiteDocRef = await addDoc(worksitesRef, worksiteData);
+
+    const worksiteId = worksiteDocRef.id;
+    const updatedWorksiteData = {
+      ...worksiteData,
+      id: worksiteId,
+    };
+
+    await setDoc(doc(db, "worksites", worksiteId), updatedWorksiteData);
+  } catch (error) {
+    console.error("Error while creating new worksite:", error);
+    if (error.code) {
+      console.error("Error code:", error.code);
+    }
+  }
+};
+
+export function createGeoPoint(latitude, longitude) {
+  return new GeoPoint(latitude, longitude);
+}
+
 export const getAuthUserInformation = async () => {
   try {
     const userId = auth.currentUser;
@@ -163,6 +236,7 @@ export const getCompanyIdByAuthUser = async () => {
 
       if (userSnapshot.exists()) {
         const userData = userSnapshot.data();
+        console.log(userData.companyId);
         return userData.companyId;
       } else {
         console.log("User data does not exist");
@@ -276,6 +350,39 @@ export const getCompanyPersonnels = async () => {
   }
 };
 
+export const getCompanyFreeDrivers = async () => {
+  try {
+    const company = await getCompanyByManagerId();
+    const companyId = company.id;
+    // const personnelsIds = company.personnels || [];
+
+    if (companyId) {
+      const personnelsIds = company.personnels || [];
+
+      const usersQuery = query(
+        collection(db, "users"),
+        where("companyId", "==", companyId),
+        where("role", "==", "driver"),
+        where("id", "in", personnelsIds)
+      );
+
+      const querySnapshot = await getDocs(usersQuery);
+
+      const drivers = querySnapshot.docs
+        .map((doc) => doc.data())
+        .filter((driver) => !driver.vehicleId); // Filter drivers with empty vehicleId
+
+      return drivers;
+    } else {
+      console.log("companyId is not found");
+      return null;
+    }
+  } catch (error) {
+    console.error("Error getting drivers information:", error);
+    return null;
+  }
+};
+
 export const getCompanyDeliveries = async () => {
   try {
     const company = await getCompanyByManagerId();
@@ -309,11 +416,23 @@ export const getCompanyDeliveries = async () => {
 };
 
 export const getSupplierCompanies = async () => {
-  const supplierRef = query(collection(db, "suppliers"));
   try {
-    const supplierSnapshot = await getDocs(supplierRef);
-    const supplierData = supplierSnapshot.docs.map((doc) => doc.data());
-    return supplierData;
+    const companyId = await getCompanyIdByAuthUser();
+
+    if (companyId) {
+      const supplierRef = collection(db, "suppliers");
+
+      const supplierSnapshot = await getDocs(
+        query(supplierRef, where("receiverId", "==", companyId))
+      );
+      if (!supplierSnapshot.empty) {
+        const supplierData = supplierSnapshot.docs.map((doc) => doc.data());
+        return supplierData;
+      } else {
+        console.log("No supplier found for the given companyId");
+        return [];
+      }
+    }
   } catch (error) {
     console.error("Supplier bilgilerini alırken hata oluştu:", error);
     return [];
@@ -352,6 +471,7 @@ export const getCompanyWaitingPersonnels = async () => {
       const usersQuery = query(
         collection(db, "users"),
         where("companyId", "==", companyId),
+        where("role", "==", "personnel"),
         where("isConfirmedCompany", "==", false)
       );
 

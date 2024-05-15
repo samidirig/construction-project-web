@@ -8,7 +8,7 @@ export default function Layout() {
 
     const isLoggedIn = useIsLoggedIn();
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
-
+    const [companyId, setCompanyId] = useState(null);
     useEffect(() => {
         const handleResize = () => {
             setScreenWidth(window.innerWidth);
@@ -26,6 +26,7 @@ export default function Layout() {
             try {
                 const companyId = await getCompanyIdByAuthUser();
                 localStorage.setItem('companyId', companyId);
+                setCompanyId(companyId);
             } catch (error) {
                 console.error('Error saving companyId to localStorage:', error);
             }
@@ -33,7 +34,7 @@ export default function Layout() {
 
         saveCompanyIdToLocal();
 
-    }, []);
+    }, [companyId]);
 
     let newPadding = 0;
     if (screenWidth > 850) { newPadding = 80; } else { newPadding = 80; }

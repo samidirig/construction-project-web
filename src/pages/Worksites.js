@@ -10,13 +10,13 @@ import {
 import Background1 from "../assets/images/background_1.jpg";
 import { useWindowSizeWidth } from "../config/hooks";
 import {
-  getAuthUserInformation,
-  getCompanyByManagerId,
   getCompanyIdByAuthUser,
+  getCompanyByManagerId,
   getCompanyWorksites,
 } from "../config/firebase";
 import MapWorksite from "../components/map/map_worksites/MapWorksite";
 import { orangeButtonContent } from "../style/utils";
+import CreateWorksiteModal from "../components/modal/CreateWorksiteModal";
 
 export default function Worksites() {
   const windowScreenWidth = useWindowSizeWidth();
@@ -24,6 +24,9 @@ export default function Worksites() {
   const [companyData, setCompanyData] = useState({});
   const [loading, setLoading] = useState(true);
   const [selectedWorksite, setSelectedWorksite] = useState(null);
+  const [confirmationTrigger, setConfirmationTrigger] = useState(false);
+  const [isCreateWorksiteModalOpen, setIsCreateWorksiteModalOpen] =
+    useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -41,20 +44,20 @@ export default function Worksites() {
     }
 
     fetchData();
-  }, []);
+  }, [confirmationTrigger]);
 
   useEffect(() => {
     const saveCompanyIdToLocal = async () => {
       try {
-        const authUser = await getAuthUserInformation();
-        localStorage.setItem("companyId", authUser.companyId);
+        const companyId = await getCompanyIdByAuthUser();
+        localStorage.setItem("companyId", companyId);
       } catch (error) {
         console.error("Error saving companyId to localStorage:", error);
       }
     };
 
     saveCompanyIdToLocal();
-  }, []);
+  }, [confirmationTrigger]);
 
   const formatTimestampToDate = (timestamp) => {
     const date = new Date(timestamp.seconds * 1000); // Timestamp saniye cinsinden geldiği için 1000 ile çarpıyoruz
@@ -71,6 +74,15 @@ export default function Worksites() {
 
   const handleGetSelectedWorkSite = (worksite) => {
     setSelectedWorksite(worksite);
+  };
+
+  const handleOpenCreateWorksiteModal = () => {
+    setIsCreateWorksiteModalOpen(true);
+  };
+
+  const handleCloseCreateWorksiteModal = () => {
+    setIsCreateWorksiteModalOpen(false);
+    setConfirmationTrigger(!confirmationTrigger);
   };
 
   console.log(selectedWorksite);
@@ -140,7 +152,7 @@ export default function Worksites() {
           >
             <Button
               variant="contained"
-              //onClick={handleLogout}
+              onClick={handleOpenCreateWorksiteModal}
               sx={orangeButtonContent}
             >
               Şantiye Oluştur
@@ -232,6 +244,14 @@ export default function Worksites() {
           </Typography>
         )}
       </Stack>
+
+      {/* worksite create modal */}
+      {isCreateWorksiteModalOpen && (
+        <CreateWorksiteModal
+          isOpen={isCreateWorksiteModalOpen}
+          onClose={handleCloseCreateWorksiteModal}
+        />
+      )}
     </div>
   );
 }

@@ -16,15 +16,21 @@ import {
   orangeButtonContent,
 } from "../style/utils";
 import CreateDeliveryModal from "../components/modal/CreateDeliveryModal";
+import CreateVehicleModal from "../components/modal/CreateVehicleModal";
+import CreateSupplierModal from "../components/modal/CreateSupplierModal";
 
 export default function Deliveries() {
   const [deliveryData, setDeliveryData] = useState({});
   const [companyData, setCompanyData] = useState({});
   const [loading, setLoading] = useState(true);
   const [confirmationTrigger, setConfirmationTrigger] = useState(false);
-  const windowScreenWidth = useWindowSizeWidth();
   const [isCreateDeliveryModalOpen, setIsCreateDeliveryModalOpen] =
     useState(false);
+  const [isCreateVehicleModalOpen, setIsCreateVehicleModalOpen] =
+    useState(false);
+  const [isCreateSupplierModalOpen, setIsCreateSupplierModalOpen] =
+    useState(false);
+  const windowScreenWidth = useWindowSizeWidth();
 
   useEffect(() => {
     async function fetchData() {
@@ -51,6 +57,22 @@ export default function Deliveries() {
   const handleCloseCreateDeliveryModal = () => {
     setIsCreateDeliveryModalOpen(false);
     setConfirmationTrigger(!confirmationTrigger);
+  };
+
+  const handleOpenCreateVehicleModal = () => {
+    setIsCreateVehicleModalOpen(true);
+  };
+
+  const handleCloseCreateVehicleModal = () => {
+    setIsCreateVehicleModalOpen(false);
+  };
+
+  const handleOpenCreateSupplierModal = () => {
+    setIsCreateSupplierModalOpen(true);
+  };
+
+  const handleCloseCreateSupplierModal = () => {
+    setIsCreateSupplierModalOpen(false);
   };
 
   return (
@@ -127,15 +149,15 @@ export default function Deliveries() {
             </Button>
             <Button
               variant="contained"
-              onClick={() => {}}
-              sx={{...orangeButtonContent, width:'200px' }}
+              onClick={handleOpenCreateSupplierModal}
+              sx={{ ...orangeButtonContent, width: "200px" }}
             >
               Tedarikçi Firma Oluştur
             </Button>
             <Button
               variant="contained"
-              onClick={() => {}}
-              sx={{...orangeButtonContent, width:'200px' }}
+              onClick={handleOpenCreateVehicleModal}
+              sx={{ ...orangeButtonContent, width: "200px" }}
             >
               Tedarik Aracı Oluştur
             </Button>
@@ -262,11 +284,27 @@ export default function Deliveries() {
         </Stack>
       </Stack>
 
-      {/* Sipariş oluşturma modalı */}
+      {/* delivery create modal */}
       {isCreateDeliveryModalOpen && (
         <CreateDeliveryModal
           isOpen={isCreateDeliveryModalOpen}
           onClose={handleCloseCreateDeliveryModal}
+        />
+      )}
+
+      {/* vehicle create modal */}
+      {isCreateVehicleModalOpen && (
+        <CreateVehicleModal
+          isOpen={isCreateVehicleModalOpen}
+          onClose={handleCloseCreateVehicleModal}
+        />
+      )}
+
+      {/* supplier create modal */}
+      {isCreateSupplierModalOpen && (
+        <CreateSupplierModal
+          isOpen={isCreateSupplierModalOpen}
+          onClose={handleCloseCreateSupplierModal}
         />
       )}
     </div>

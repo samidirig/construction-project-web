@@ -6,6 +6,7 @@ import PersonnelsTable from '../components/table/personel_table/PersonnelTable';
 import { useWindowSizeWidth } from '../config/hooks';
 import {
   mainContent,
+  orangeButtonContent,
   tableContent,
   tableContentHeader,
   // buttonContent,
@@ -80,7 +81,7 @@ export default function Personnels() {
       <div style={{
         position: 'relative',
         width: '100%',
-        height: 200,
+        height: windowScreenWidth > 900 ? 90 : 200,
         display: 'flex',
         borderRadius: '50px',
         flexDirection: 'column',
@@ -116,7 +117,13 @@ export default function Personnels() {
           <Typography variant="h4" color={'#fff'} gutterBottom>
             {companyData.name} Personeller
           </Typography>
-
+          <Button
+            variant="contained"
+            onClick={() => {}}
+            sx={orangeButtonContent}
+          >
+            Sürücü Ekle
+          </Button>
         </Stack>
       </div>
 

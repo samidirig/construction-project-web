@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import "./CreateDeliveryModal.scss";
+import "./modalStyle.scss";
 import {
   Button,
   FormControl,
@@ -87,23 +87,13 @@ export default function CreateDeliveryModal({ isOpen, onClose }) {
   }, [selectedSupplier]);
 
   const handleDateChange = (date) => {
-    const timestamp = Timestamp.fromDate(date);
+    // const timestamp = Timestamp.fromDate(date);
     setSelectedDeliveryDate(date);
   };
 
   const toggleCalendarVisibility = () => {
     setIsCalendarVisible((prev) => !prev);
   };
-  // if (selectedSupplier) {
-  //   console.log("selectedSupplier: " + selectedSupplier.id);
-  //   console.log("selectedMaterial: " + selectedMaterial);
-  //   console.log("selectedVehicle: " + selectedVehicle);
-  //   console.log("selectedWorksite: " + selectedWorksite);
-  //   console.log("selectedDeliveryDetail: " + selectedDeliveryDetail);
-  //   console.log("selectedDeliveryDate: " + selectedDeliveryDate);
-  //   console.log("companyDetail: ");
-  //   console.log(companyData);
-  // }
 
   const handleCreateNewDelivery = async () => {
     try {
@@ -126,7 +116,7 @@ export default function CreateDeliveryModal({ isOpen, onClose }) {
         };
 
         await createNewDelivery(deliveryData);
-        setSnackPositiveMessage("Profil bilgileriniz güncellendi.");
+        setSnackPositiveMessage("Yeni siparişiniz oluşturuldu.");
         setOpenPositiveSnackbar(true);
         onClose();
       } else {
@@ -157,7 +147,6 @@ export default function CreateDeliveryModal({ isOpen, onClose }) {
   return (
     <div className="modal-overlay">
       <div className="modal-content">
-        {/* Modal içeriği buraya gelecek */}
         {/* message bar negative */}
         <Snackbar
           open={openNegativeSnackbar}
@@ -314,6 +303,7 @@ export default function CreateDeliveryModal({ isOpen, onClose }) {
                   id="delivery-detail"
                   label="Sipariş Detay"
                   variant="outlined"
+                  required
                   fullWidth
                   inputProps={{ maxLength: 150 }} // Maksimum giriş uzunluğu 150 karakter
                   value={selectedDeliveryDetail || ""} // Değer deliveryDetail state'inden gelir
@@ -336,6 +326,7 @@ export default function CreateDeliveryModal({ isOpen, onClose }) {
                       : ""
                   }
                   fullWidth
+                  required
                   margin="normal"
                   // disabled={!isEditMode}
                   onChange={() => {}}

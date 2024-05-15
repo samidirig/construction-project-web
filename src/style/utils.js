@@ -12,7 +12,7 @@ export const mainContent = {
 export const tableContent = {
   position: "relative",
   height: "auto",
-  minHeight: 400,
+  minHeight: 420,
   display: "flex",
   borderRadius: "20px",
   flexDirection: "column",
@@ -72,5 +72,26 @@ export const orangeButtonContent = {
     color: "#ffffff",
     boxShadow: "0px 0 10px rgba(52, 104, 192, 0.7)",
     transform: "scale(1.05)",
+  },
+};
+
+export const clickButtonWhite = {
+  boxShadow: "0px 0px 10px rgba(1, 30, 48, 0.4)",
+  mb: 5,
+  width: "45%",
+  minHeight: "40px",
+  height: "auto",
+  textAlign: "center",
+  bgcolor: "#ffffff",
+  color: "#000000",
+  borderRadius: "8px",
+  fontFamily:
+    "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif",
+  fontSize: "auto",
+  fontWeight: "600",
+  zIndex: "100",
+  "&:hover": {
+    bgcolor: "#ceeafc",
+    color: "#000000",
   },
 };
