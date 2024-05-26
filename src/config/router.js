@@ -10,6 +10,7 @@ import Profile from "../pages/Profile";
 import Projects from '../pages/Projects'
 import Register from '../pages/Register'
 import Worksites from '../pages/Worksites'
+import Documents from "../pages/Documents";
 
 export default function Router() {
 
@@ -24,11 +25,12 @@ export default function Router() {
         
         <Route element={<MainLayout />}>
           <Route exact path="/" element={<Home />} />
-          <Route exact path="/personnels" element={<Personnels />} />
-          <Route exact path="/deliveries" element={<Deliveries />} />
-          <Route exact path="/profile" element={<Profile />} />
           <Route exact path="/projects" element={<Projects />} />
           <Route exact path="/worksites" element={<Worksites />} />
+          <Route exact path="/personnels" element={<Personnels />} />
+          <Route exact path="/deliveries" element={<Deliveries />} />
+          <Route exact path="/documents" element={<Documents />} />
+          <Route exact path="/profile" element={<Profile />} />
         </Route>
 
       </Routes>

@@ -7,7 +7,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import Background1 from "../assets/images/background_1.jpg";
+import Background1 from "../assets/images/worksite_background.PNG";
 import { useWindowSizeWidth } from "../config/hooks";
 import {
   getCompanyIdByAuthUser,
@@ -15,8 +15,13 @@ import {
   getCompanyWorksites,
 } from "../config/firebase";
 import MapWorksite from "../components/map/map_worksites/MapWorksite";
-import { orangeButtonContent } from "../style/utils";
-import CreateWorksiteModal from "../components/modal/CreateWorksiteModal";
+import { orangeButtonContent, worksiteCardContent } from "../style/utils";
+import CreateWorksiteModal from "../components/CreateModals/CreateWorksiteModal";
+import CreateShiftModal from "../components/CreateModals/CreateShiftModal";
+import ViewWorksitePersonnels from "../components/ViewModals/ViewWorksitePersonnels";
+import ViewWorksiteShifts from "../components/ViewModals/ViewWorksiteShifts";
+import ViewWorksiteDetails from "../components/ViewModals/ViewWorksiteDetails";
+import TopImage from "../components/TopImage";
 
 export default function Worksites() {
   const windowScreenWidth = useWindowSizeWidth();
@@ -24,8 +29,17 @@ export default function Worksites() {
   const [companyData, setCompanyData] = useState({});
   const [loading, setLoading] = useState(true);
   const [selectedWorksite, setSelectedWorksite] = useState(null);
+  const [viewSelectedWorksite, setViewSelectedWorksite] = useState(null);
+  const [selectedCardIndex, setSelectedCardIndex] = useState(null);
   const [confirmationTrigger, setConfirmationTrigger] = useState(false);
   const [isCreateWorksiteModalOpen, setIsCreateWorksiteModalOpen] =
+    useState(false);
+  const [isCreateShiftModalOpen, setIsCreateShiftModalOpen] = useState(false);
+  const [isWorksiteShiftModalOpen, setIsWorksiteShiftModalOpen] =
+    useState(false);
+  const [isWorksitePersonnelModalOpen, setIsWorksitePersonnelModalOpen] =
+    useState(false);
+  const [isWorksiteDetailsModalOpen, setIsWorksiteDetailsModalOpen] =
     useState(false);
 
   useEffect(() => {
@@ -64,20 +78,63 @@ export default function Worksites() {
     return date.toLocaleDateString();
   };
 
-  const handleCardClick = (worksite) => {
+  const handleCardClick = (worksite, index) => {
     if (!selectedWorksite) {
-      setSelectedWorksite(worksite);
+      setSelectedWorksite(selectedWorksite === worksite ? null : worksite);
+      setSelectedCardIndex(index === selectedCardIndex ? null : index);
     } else {
       setSelectedWorksite(null);
+      setSelectedCardIndex(null);
     }
   };
 
-  const handleGetSelectedWorkSite = (worksite) => {
+  const handleButtonClick = (worksite, modalType) => {
+    if (!viewSelectedWorksite) {
+      setViewSelectedWorksite(
+        viewSelectedWorksite === worksite ? null : worksite
+      );
+
+      switch (modalType) {
+        case "shifts":
+          handleOpenWorksiteShiftModal(worksite);
+          break;
+        case "personnels":
+          handleOpenWorksitePersonnelModal(worksite);
+          break;
+        case "details":
+          handleOpenWorksiteDetailsModal(worksite);
+          break;
+        default:
+          console.error(`Invalid modal type: ${modalType}`);
+      }
+    } else {
+      setViewSelectedWorksite(null);
+    }
+  };
+
+  const handleMapSelectedWorkSite = (worksite) => {
     setSelectedWorksite(worksite);
+    setSelectedCardIndex(null);
   };
 
   const handleOpenCreateWorksiteModal = () => {
     setIsCreateWorksiteModalOpen(true);
+  };
+
+  const handleOpenCreateShiftModal = () => {
+    setIsCreateShiftModalOpen(true);
+  };
+
+  const handleOpenWorksiteShiftModal = () => {
+    setIsWorksiteShiftModalOpen(true);
+  };
+
+  const handleOpenWorksitePersonnelModal = () => {
+    setIsWorksitePersonnelModalOpen(true);
+  };
+
+  const handleOpenWorksiteDetailsModal = () => {
+    setIsWorksiteDetailsModalOpen(true);
   };
 
   const handleCloseCreateWorksiteModal = () => {
@@ -85,79 +142,77 @@ export default function Worksites() {
     setConfirmationTrigger(!confirmationTrigger);
   };
 
-  console.log(selectedWorksite);
+  const handleCloseCreateShiftModal = () => {
+    setIsCreateShiftModalOpen(false);
+    setConfirmationTrigger(!confirmationTrigger);
+  };
+
+  const handleCloseWorksitePersonnelModal = () => {
+    setIsWorksitePersonnelModalOpen(false);
+    setViewSelectedWorksite(null);
+    setConfirmationTrigger(!confirmationTrigger);
+  };
+
+  const handleCloseWorksiteShiftModal = () => {
+    setIsWorksiteShiftModalOpen(false);
+    setViewSelectedWorksite(null);
+    setConfirmationTrigger(!confirmationTrigger);
+  };
+
+  const handleCloseWorksiteDetailsModal = () => {
+    setIsWorksiteDetailsModalOpen(false);
+    setViewSelectedWorksite(null);
+    setConfirmationTrigger(!confirmationTrigger);
+  };
+
+  console.log(viewSelectedWorksite);
   return (
     <div>
       {/* top image content */}
+      <TopImage
+        imagePath={Background1}
+        companyName={companyData.name}
+        page={"Şantiyeleri"}
+      />
       <div
         style={{
           position: "relative",
           width: "100%",
-          height: windowScreenWidth > 900 ? 90 : 200,
+          height: "auto",
+          minHeight: 50,
+          borderRadius: "50px",
           display: "flex",
-          borderRadius: "20px",
           flexDirection: "column",
-          alignItems: "flex-start",
+          alignItems: "center",
           justifyContent: "center",
         }}
       >
-        <img
-          src={Background1}
-          alt="login"
-          style={{
-            position: "absolute",
-            width: "100%",
-            height: "100%",
-            borderRadius: "20px",
-            objectFit: "cover",
-            zIndex: 1,
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            width: "100%",
-            height: "100%",
-            borderRadius: "20px",
-            background:
-              "linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.5))", // Adjust the gradient values as needed
-            zIndex: 2, // Place the gradient overlay above the image
-          }}
-        />
-
         <Stack
           sx={{
             zIndex: 2,
-            position: "absolute",
-            bottom: 15,
-            left: "5%",
+            mt: "20px",
             display: "flex",
             flexDirection: "row",
-            flexWrap: "wrap",
             alignItems: "center",
-            gap: windowScreenWidth > 900 ? "50px" : "40px",
+            justifyContent: "center",
+            flexWrap: "wrap",
+            gap: "50px",
           }}
         >
-          <Typography variant="h4" color={"#fff"} gutterBottom>
-            {companyData.name} Şantiyeleri
-          </Typography>
-          <Stack
-            sx={{
-              display: "flex",
-              flexDirection: "row",
-              flexWrap: "wrap",
-              alignItems: "center",
-              gap: "10px",
-            }}
+          <Button
+            variant="contained"
+            onClick={handleOpenCreateWorksiteModal}
+            sx={orangeButtonContent}
           >
-            <Button
-              variant="contained"
-              onClick={handleOpenCreateWorksiteModal}
-              sx={orangeButtonContent}
-            >
-              Şantiye Oluştur
-            </Button>
-          </Stack>
+            Şantiye Oluştur
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleOpenCreateShiftModal}
+            sx={orangeButtonContent}
+          >
+            Vardiya Oluştur
+          </Button>
         </Stack>
       </div>
 
@@ -179,7 +234,10 @@ export default function Worksites() {
           worksiteList={worksitesData}
           selectedWorksite={selectedWorksite}
           getSelectedWorkSite={(worksite) =>
-            handleGetSelectedWorkSite(worksite)
+            handleMapSelectedWorkSite(worksite)
+          }
+          getSelectedModal={(worksite, modalType) =>
+            handleButtonClick(worksite, modalType)
           }
         />
       </Stack>
@@ -204,37 +262,101 @@ export default function Worksites() {
             <Card
               key={index}
               sx={{
-                mb: 2,
-                p: 1,
-                width: "100%",
-                maxWidth: windowScreenWidth > 900 ? "400px" : "100%",
-                height: "200px",
-                backgroundColor: selectedWorksite
-                  ? "rgba(255, 152, 67, 0.7)"
-                  : "rgba(255, 152, 67, 0.2)",
-                borderRadius: "20px",
-                boxShadow: "0px 0 10px rgba(52, 104, 192, 0.3)",
-                cursor: "pointer",
-                transition: "transform 0.3s",
-                "&:hover": {
-                  transform: "scale(1.05)",
-                },
+                ...worksiteCardContent,
+                maxWidth: windowScreenWidth > 900 ? "420px" : "100%",
+                backgroundColor:
+                  selectedCardIndex === index || selectedWorksite === worksite
+                    ? "rgba(255, 152, 67, 0.7)"
+                    : "rgba(255, 152, 67, 0.2)",
               }}
-              onClick={() => handleCardClick(worksite)}
             >
               <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Proje İsmi: {worksite.name}
-                </Typography>
-                <Typography variant="subtitle1" gutterBottom>
-                  Firma İsmi: {companyData.name}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Başlangıç Tarihi: {formatTimestampToDate(worksite.startDate)}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Bitiş Tarihi: {formatTimestampToDate(worksite.finishDate)}
-                </Typography>
+                <Stack
+                  sx={{
+                    width: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "start",
+                    justifyContent: "space-around",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => handleCardClick(worksite, index)}
+                >
+                  <Typography variant="h6" gutterBottom>
+                    {worksite.name}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    gutterBottom
+                  >
+                    Başlangıç Tarihi:{" "}
+                    {formatTimestampToDate(worksite.startDate)}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    gutterBottom
+                  >
+                    Bitiş Tarihi: {formatTimestampToDate(worksite.finishDate)}
+                  </Typography>
+                </Stack>
+
+                {/* card buttons */}
+                <Stack
+                  sx={{
+                    width: "100%",
+                    pt: 2,
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "20px",
+                  }}
+                >
+                  <Button
+                    variant="contained"
+                    onClick={() => handleButtonClick(worksite, "shifts")}
+                    sx={{
+                      ...orangeButtonContent,
+                      width: 110,
+                      height: 30,
+                      fontSize: "12px",
+                    }}
+                  >
+                    Vardiyalar
+                  </Button>
+                  <Button
+                    variant="contained"
+                    onClick={() => handleButtonClick(worksite, "personnels")}
+                    sx={{
+                      ...orangeButtonContent,
+                      width: 110,
+                      height: 30,
+                      fontSize: "12px",
+                    }}
+                  >
+                    Personeller
+                  </Button>
+                  <Button
+                    variant="contained"
+                    onClick={() => handleButtonClick(worksite, "details")}
+                    sx={{
+                      ...orangeButtonContent,
+                      bgcolor: "rgba(134, 167, 252, 0.9)",
+                      width: 110,
+                      height: 30,
+                      fontSize: "12px",
+                      "&:hover": {
+                        bgcolor: "rgba(134, 167, 252, 0.7)",
+                        color: "#ffffff",
+                        boxShadow: "0px 0 10px rgba(52, 104, 192, 0.7)",
+                      },
+                    }}
+                  >
+                    Düzenle
+                  </Button>
+                </Stack>
               </CardContent>
             </Card>
           ))
@@ -250,6 +372,38 @@ export default function Worksites() {
         <CreateWorksiteModal
           isOpen={isCreateWorksiteModalOpen}
           onClose={handleCloseCreateWorksiteModal}
+        />
+      )}
+
+      {/* shift create modal */}
+      {isCreateShiftModalOpen && (
+        <CreateShiftModal
+          isOpen={isCreateShiftModalOpen}
+          onClose={handleCloseCreateShiftModal}
+        />
+      )}
+
+      {isWorksiteShiftModalOpen && (
+        <ViewWorksiteShifts
+          isOpen={isWorksiteShiftModalOpen}
+          onClose={handleCloseWorksiteShiftModal}
+          viewSelectedWorksite={viewSelectedWorksite}
+        />
+      )}
+
+      {isWorksitePersonnelModalOpen && (
+        <ViewWorksitePersonnels
+          isOpen={isWorksitePersonnelModalOpen}
+          onClose={handleCloseWorksitePersonnelModal}
+          viewSelectedWorksite={viewSelectedWorksite}
+        />
+      )}
+
+      {isWorksiteDetailsModalOpen && (
+        <ViewWorksiteDetails
+          isOpen={isWorksiteDetailsModalOpen}
+          onClose={handleCloseWorksiteDetailsModal}
+          viewSelectedWorksite={viewSelectedWorksite}
         />
       )}
     </div>

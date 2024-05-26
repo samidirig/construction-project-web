@@ -1,82 +1,160 @@
-import React from 'react'
-import { Link, useLocation } from 'react-router-dom';
-import './Topbar.scss';
-import { RxDashboard } from "react-icons/rx";
-import { IoPersonOutline } from "react-icons/io5";
-import { ImBin } from "react-icons/im";
-import { CgProfile } from "react-icons/cg";
-import { FaTasks } from "react-icons/fa";
+import React, { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import "./Topbar.scss";
+import { MdSpaceDashboard } from "react-icons/md";
+
 import {
-    AppBar,
-    Toolbar,
+  AppBar,
+  Toolbar,
+  IconButton,
+  Drawer,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
-import { getCompanyNameById } from '../../config/firebase';
+import MenuIcon from "@mui/icons-material/Menu";
+import { FaProjectDiagram } from "react-icons/fa";
+import { IoConstructSharp } from "react-icons/io5";
+import { RiTeamFill } from "react-icons/ri";
+import { TbTruckDelivery } from "react-icons/tb";
+import { IoDocuments } from "react-icons/io5";
+import { CgProfile } from "react-icons/cg";
 
-export default function Topbar() {
-    const location = useLocation();
+const Topbar = () => {
+  const location = useLocation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
-    const TopbarPages = [
-        {
-            display: 'Ana Ekran',
-            icon: <RxDashboard />,
-            to: '/',
-            section: ''
-        },
-        {
-            display: 'Projeler',
-            icon: <FaTasks />,
-            to: '/projects',
-            section: 'projects'
-        },
-        {
-            display: 'Şantiyeler',
-            icon: <ImBin />,
-            to: '/worksites',
-            section: 'worksites'
-        },
-        {
-            display: 'Personeller',
-            icon: <IoPersonOutline />,
-            to: '/personnels',
-            section: 'personnels'
-        },
-        {
-            display: 'Teslimatlar',
-            icon: <IoPersonOutline />,
-            to: '/deliveries',
-            section: 'deliveries'
-        },
-        {
-            display: 'Profile',
-            icon: <CgProfile />,
-            to: '/profile',
-            section: 'profile'
-        },
-    ]
+  const TopbarPages = [
+    {
+      display: "Ana Ekran",
+      icon: <MdSpaceDashboard />,
+      to: "/",
+      section: "",
+    },
+    {
+      display: "Projeler",
+      icon: <FaProjectDiagram  />,
+      to: "/projects",
+      section: "projects",
+    },
+    {
+      display: "Şantiyeler",
+      icon: <IoConstructSharp  />,
+      to: "/worksites",
+      section: "worksites",
+    },
+    {
+      display: "Personeller",
+      icon: <RiTeamFill />,
+      to: "/personnels",
+      section: "personnels",
+    },
+    {
+      display: "Teslimatlar",
+      icon: <TbTruckDelivery />,
+      to: "/deliveries",
+      section: "deliveries",
+    },
+    {
+      display: "Belge Yönetim",
+      icon: <IoDocuments />,
+      to: "/documents",
+      section: "documents",
+    },
+    {
+      display: "Profile",
+      icon: <CgProfile />,
+      to: "/profile",
+      section: "profile",
+    },
+  ];
 
-    return (
-        <>
-            <AppBar position="relative" style={{ background: '#ffffff', height: '60px' }}>
-                <Toolbar>
-                    {TopbarPages.map((page, index) => (
-                        <div key={index} style={{ display: 'flex', marginLeft: 10 }}>
-                            <Link to={page.to} style={{
-                                textDecoration: "none",
-                                color: "#FF9843",
-                                fontSize: "14px",
-                                marginLeft: 20,
-                                borderBottom: page.to === location.pathname ? "1px solid #FF9843" : "none",
-                                "&:hover": {
-                                    color: "yellow",
-                                    borderBottom: "1px solid #FF9843",
-                                },
-                            }}>
-                                {page.display}
-                            </Link>
-                        </div>
-                    ))}
-                </Toolbar>
-            </AppBar>
-        </>
-    )
-}
+  const toggleDrawer = (open) => (event) => {
+    if (
+      event.type === "keydown" &&
+      (event.key === "Tab" || event.key === "Shift")
+    ) {
+      return;
+    }
+    setDrawerOpen(open);
+  };
+
+  return (
+    <>
+      <AppBar
+        position="relative"
+        style={{ background: "#ffffff", height: "60px" }}
+      >
+        <Toolbar>
+          {isMobile ? (
+            <>
+              <IconButton
+                edge="start"
+                color="#FF9843"
+                aria-label="menu"
+                onClick={toggleDrawer(true)}
+              >
+                <MenuIcon />
+              </IconButton>
+              <Drawer
+                anchor="left"
+                open={drawerOpen}
+                onClose={toggleDrawer(false)}
+              >
+                <List>
+                  {TopbarPages.map((page, index) => (
+                    <Link
+                      key={index}
+                      to={page.to}
+                      style={{ textDecoration: "none", color: "inherit" }}
+                    >
+                      <ListItem button onClick={toggleDrawer(false)}>
+                        <ListItemIcon>{page.icon}</ListItemIcon>
+                        <ListItemText primary={page.display} />
+                      </ListItem>
+                    </Link>
+                  ))}
+                </List>
+              </Drawer>
+              <Typography variant="h6" color={"#FF9843"} noWrap style={{ flexGrow: 1 }}>
+                My Application
+              </Typography>
+            </>
+          ) : (
+            TopbarPages.map((page, index) => (
+              <div key={index} style={{ display: "flex", marginLeft: 10 }}>
+                <Link
+                  to={page.to}
+                  style={{
+                    textDecoration: "none",
+                    color: "#FF9843",
+                    fontSize: "14px",
+                    marginLeft: 20,
+                    borderBottom:
+                      page.to === location.pathname
+                        ? "1px solid #FF9843"
+                        : "none",
+                    "&:hover": {
+                      color: "yellow",
+                      borderBottom: "1px solid #FF9843",
+                    },
+                  }}
+                >
+                  {page.display}
+                </Link>
+              </div>
+            ))
+          )}
+        </Toolbar>
+      </AppBar>
+    </>
+  );
+};
+
+export default Topbar;

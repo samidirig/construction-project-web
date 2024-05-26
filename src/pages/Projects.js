@@ -7,30 +7,53 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import Background1 from "../assets/images/background_1.jpg";
+import Background1 from "../assets/images/project_background.PNG";
 import { useWindowSizeWidth } from "../config/hooks";
 import {
   getCompanyByManagerId,
   getCompanyIdByAuthUser,
   getCompanyProjects,
 } from "../config/firebase";
-import { orangeButtonContent } from "../style/utils";
-import CreateProjectModal from "../components/modal/CreateProjectModal";
+import { orangeButtonContent, projectCardContent } from "../style/utils";
+import CreateProjectModal from "../components/CreateModals/CreateProjectModal";
+import TopImage from "../components/TopImage";
+import ViewProjectDocuments from "../components/ViewModals/ViewProjectDocuments";
+import ViewProjectDetails from "../components/ViewModals/ViewProjectDetails";
+import ViewProjectWorksites from "../components/ViewModals/ViewProjectWorksites";
 
 export default function Projects() {
   const windowScreenWidth = useWindowSizeWidth();
   const [projectsData, setProjectsData] = useState([]);
   const [companyData, setCompanyData] = useState({});
+  const [viewSelectedProject, setViewSelectedProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [confirmationTrigger, setConfirmationTrigger] = useState(false);
   const [isCreateProjectModalOpen, setIsCreateProjectModalOpen] =
     useState(false);
+  const [isProjectWorksitesModalOpen, setIsProjectWorksitesModalOpen] =
+    useState(false);
+  const [isProjectPersonnelModalOpen, setIsProjectPersonnelModalOpen] =
+    useState(false);
+  const [isProjectDetailsModalOpen, setIsProjectDetailsModalOpen] =
+    useState(false);
 
   useEffect(() => {
     async function fetchData() {
-      const company = await getCompanyByManagerId();
-      setCompanyData(company);
+      try {
+        const company = await getCompanyByManagerId();
+        setCompanyData(company || []);
+      } catch (error) {
+        console.error("Error fetching company:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
 
+    fetchData();
+  }, [confirmationTrigger]);
+
+  useEffect(() => {
+    async function fetchData() {
       try {
         const projects = await getCompanyProjects();
         setProjectsData(projects || []);
@@ -57,11 +80,34 @@ export default function Projects() {
     saveCompanyIdToLocal();
   }, [confirmationTrigger]);
 
-  console.log(companyData);
-  console.log(projectsData);
   const formatTimestampToDate = (timestamp) => {
     const date = new Date(timestamp.seconds * 1000); // Timestamp saniye cinsinden geldiği için 1000 ile çarpıyoruz
     return date.toLocaleDateString();
+  };
+
+  console.log(viewSelectedProject);
+  const handleButtonClick = (project, modalType) => {
+    if (!viewSelectedProject) {
+      setViewSelectedProject(viewSelectedProject === project ? null : project);
+      switch (modalType) {
+        case "worksites":
+          handleOpenProjectWorksitesModal(project);
+          console.log(modalType);
+          break;
+        case "documents":
+          handleOpenProjectPersonnelModal(project);
+          console.log(modalType);
+          break;
+        case "details":
+          handleOpenProjectDetailsModal(project);
+          console.log(modalType);
+          break;
+        default:
+          console.error(`Invalid modal type: ${modalType}`);
+      }
+    } else {
+      setViewSelectedProject(null);
+    }
   };
 
   const handleOpenCreateProjectModal = () => {
@@ -72,59 +118,71 @@ export default function Projects() {
     setIsCreateProjectModalOpen(false);
     setConfirmationTrigger(!confirmationTrigger);
   };
+
+  // view modals
+  const handleOpenProjectWorksitesModal = () => {
+    setIsProjectWorksitesModalOpen(true);
+  };
+
+  const handleOpenProjectPersonnelModal = () => {
+    setIsProjectPersonnelModalOpen(true);
+  };
+
+  const handleOpenProjectDetailsModal = () => {
+    setIsProjectDetailsModalOpen(true);
+  };
+
+  const handleCloseProjectPersonnelModal = () => {
+    setIsProjectPersonnelModalOpen(false);
+    setViewSelectedProject(null);
+    setConfirmationTrigger(!confirmationTrigger);
+  };
+
+  const handleCloseProjectWorksitesModal = () => {
+    setIsProjectWorksitesModalOpen(false);
+    setViewSelectedProject(null);
+    setConfirmationTrigger(!confirmationTrigger);
+  };
+
+  const handleCloseProjectDetailsModal = () => {
+    setIsProjectDetailsModalOpen(false);
+    setViewSelectedProject(null);
+    setConfirmationTrigger(!confirmationTrigger);
+  };
+
   return (
     <div>
       {/* top image content */}
+      <TopImage
+        imagePath={Background1}
+        companyName={companyData.name}
+        page={"Projeleri"}
+      />
       <div
         style={{
           position: "relative",
           width: "100%",
-          height: 250,
-          display: "flex",
+          height: "auto",
+          minHeight: 50,
           borderRadius: "50px",
+          display: "flex",
           flexDirection: "column",
-          alignItems: "flex-start",
+          alignItems: "center",
           justifyContent: "center",
         }}
       >
-        <img
-          src={Background1}
-          alt="login"
-          style={{
-            position: "absolute",
-            width: "100%",
-            height: "100%",
-            borderRadius: "50px",
-            objectFit: "cover",
-            zIndex: 1,
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            width: "100%",
-            height: "100%",
-            borderRadius: "50px",
-            background:
-              "linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.5))", // Adjust the gradient values as needed
-            zIndex: 2, // Place the gradient overlay above the image
-          }}
-        />
-
         <Stack
           sx={{
             zIndex: 2,
-            position: "absolute",
-            bottom: 15,
-            left: "5%",
+            mt: "20px",
             display: "flex",
             flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            flexWrap: "wrap",
             gap: "50px",
           }}
         >
-          <Typography variant="h4" color={"#fff"} gutterBottom>
-            {companyData.name} Projeleri
-          </Typography>
           <Button
             variant="contained"
             onClick={handleOpenCreateProjectModal}
@@ -135,6 +193,7 @@ export default function Projects() {
         </Stack>
       </div>
 
+      {/* project card content */}
       <Stack
         sx={{
           mt: 3,
@@ -154,33 +213,109 @@ export default function Projects() {
             <Card
               key={index}
               sx={{
-                mb: 2,
-                p: 1,
-                width: "100%",
-                maxWidth: windowScreenWidth > 900 ? "400px" : "100%",
-                height: "200px",
+                ...projectCardContent,
+                maxWidth: windowScreenWidth > 900 ? "420px" : "100%",
                 backgroundColor: "rgba(255, 152, 67, 0.2)",
-                borderRadius: "20px",
-                boxShadow: "0px 0 10px rgba(52, 104, 192, 0.3)",
-                transition: "transform 0.3s",
-                "&:hover": {
-                  transform: "scale(1.05)",
-                },
               }}
             >
               <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Proje İsmi: {project.name}
-                </Typography>
-                <Typography variant="subtitle1" gutterBottom>
-                  Firma İsmi: {companyData.name}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Başlangıç Tarihi: {formatTimestampToDate(project.startDate)}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Bitiş Tarihi: {formatTimestampToDate(project.finishDate)}
-                </Typography>
+                <Stack
+                  sx={{
+                    width: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "start",
+                    justifyContent: "space-around",
+                  }}
+                >
+                  <Typography variant="h6" gutterBottom>
+                    {project.name}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    gutterBottom
+                  >
+                    Şehir: {project.city}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    gutterBottom
+                  >
+                    Bütçe: ₺{project.budget}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    gutterBottom
+                  >
+                    Başlangıç Tarihi: {formatTimestampToDate(project.startDate)}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    gutterBottom
+                  >
+                    Bitiş Tarihi: {formatTimestampToDate(project.finishDate)}
+                  </Typography>
+                </Stack>
+
+                {/* card buttons */}
+                <Stack
+                  sx={{
+                    width: "100%",
+                    pt: 2,
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "20px",
+                  }}
+                >
+                  <Button
+                    variant="contained"
+                    onClick={() => handleButtonClick(project, "worksites")}
+                    sx={{
+                      ...orangeButtonContent,
+                      width: 110,
+                      height: 30,
+                      fontSize: "12px",
+                    }}
+                  >
+                    Şantiyeler
+                  </Button>
+                  <Button
+                    variant="contained"
+                    onClick={() => handleButtonClick(project, "documents")}
+                    sx={{
+                      ...orangeButtonContent,
+                      width: 110,
+                      height: 30,
+                      fontSize: "12px",
+                    }}
+                  >
+                    Dökümanlar
+                  </Button>
+                  <Button
+                    variant="contained"
+                    onClick={() => handleButtonClick(project, "details")}
+                    sx={{
+                      ...orangeButtonContent,
+                      bgcolor: "rgba(134, 167, 252, 0.9)",
+                      width: 110,
+                      height: 30,
+                      fontSize: "12px",
+                      "&:hover": {
+                        bgcolor: "rgba(134, 167, 252, 0.7)",
+                        color: "#ffffff",
+                        boxShadow: "0px 0 10px rgba(52, 104, 192, 0.7)",
+                      },
+                    }}
+                  >
+                    Düzenle
+                  </Button>
+                </Stack>
               </CardContent>
             </Card>
           ))
@@ -196,6 +331,30 @@ export default function Projects() {
         <CreateProjectModal
           isOpen={isCreateProjectModalOpen}
           onClose={handleCloseCreateProjectModal}
+        />
+      )}
+
+      {isProjectWorksitesModalOpen && (
+        <ViewProjectWorksites
+          isOpen={isProjectWorksitesModalOpen}
+          onClose={handleCloseProjectWorksitesModal}
+          viewSelectedProject={viewSelectedProject}
+        />
+      )}
+
+      {isProjectPersonnelModalOpen && (
+        <ViewProjectDocuments
+          isOpen={isProjectPersonnelModalOpen}
+          onClose={handleCloseProjectPersonnelModal}
+          viewSelectedProject={viewSelectedProject}
+        />
+      )}
+
+      {isProjectDetailsModalOpen && (
+        <ViewProjectDetails
+          isOpen={isProjectDetailsModalOpen}
+          onClose={handleCloseProjectDetailsModal}
+          viewSelectedProject={viewSelectedProject}
         />
       )}
     </div>

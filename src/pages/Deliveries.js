@@ -8,16 +8,17 @@ import { CircularProgress, Stack, Typography, Button } from "@mui/material";
 import { useWindowSizeWidth } from "../config/hooks";
 import MapDeliveries from "../components/map/map_deliveries/MapDeliveries";
 import DeliveryTable from "../components/table/delivery_table/DeliveryTable";
-import Background1 from "../assets/images/background_1.jpg";
+import Background1 from "../assets/images/delivery_background.PNG";
 import {
   mainContent,
   tableContent,
   tableContentHeader,
   orangeButtonContent,
 } from "../style/utils";
-import CreateDeliveryModal from "../components/modal/CreateDeliveryModal";
-import CreateVehicleModal from "../components/modal/CreateVehicleModal";
-import CreateSupplierModal from "../components/modal/CreateSupplierModal";
+import CreateDeliveryModal from "../components/CreateModals/CreateDeliveryModal";
+import CreateVehicleModal from "../components/CreateModals/CreateVehicleModal";
+import CreateSupplierModal from "../components/CreateModals/CreateSupplierModal";
+import TopImage from "../components/TopImage";
 
 export default function Deliveries() {
   const [deliveryData, setDeliveryData] = useState({});
@@ -34,18 +35,26 @@ export default function Deliveries() {
 
   useEffect(() => {
     async function fetchData() {
-      const company = await getCompanyByManagerId();
-      setCompanyData(company);
-
       try {
-        const deliveries = await getCompanyDeliveries();
-        setDeliveryData(deliveries || []);
+        const company = await getCompanyByManagerId();
+        setCompanyData(company || []);
       } catch (error) {
-        console.error("Error fetching projects:", error);
+        console.error("Error fetching documents:", error);
       } finally {
         setLoading(false);
       }
     }
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    const fetchData = () => {
+      getCompanyDeliveries((deliveries) => {
+        setDeliveryData(deliveries || []);
+        setLoading(false);
+      });
+    };
 
     fetchData();
   }, [confirmationTrigger]);
@@ -78,90 +87,58 @@ export default function Deliveries() {
   return (
     <div>
       {/* top image content */}
+      <TopImage
+        imagePath={Background1}
+        companyName={companyData.name}
+        page={"Sipariş ve Teslimat"}
+      />
+
       <div
         style={{
           position: "relative",
           width: "100%",
-          height: windowScreenWidth > 900 ? 90 : 200,
+          height: "auto",
+          minHeight: 50,
+          borderRadius: "50px",
           display: "flex",
-          borderRadius: "20px",
           flexDirection: "column",
-          alignItems: "flex-start",
+          alignItems: "center",
           justifyContent: "center",
         }}
       >
-        <img
-          src={Background1}
-          alt="login"
-          style={{
-            position: "absolute",
-            width: "100%",
-            height: "100%",
-            borderRadius: "20px",
-            objectFit: "cover",
-            zIndex: 1,
-          }}
-        />
-
-        <div
-          style={{
-            position: "absolute",
-            width: "100%",
-            height: "100%",
-            borderRadius: "20px",
-            background:
-              "linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.5))", // Adjust the gradient values as needed
-            zIndex: 2,
-          }}
-        />
-
         <Stack
           sx={{
             zIndex: 2,
-            position: "absolute",
-            bottom: 15,
-            left: "5%",
+            mt: "20px",
             display: "flex",
             flexDirection: "row",
-            flexWrap: "wrap",
             alignItems: "center",
-            gap: windowScreenWidth > 900 ? "50px" : "40px",
+            justifyContent: "center",
+            flexWrap: "wrap",
+            gap: "50px",
           }}
         >
-          <Typography variant="h4" color={"#fff"} gutterBottom>
-            {companyData.name} Sipariş ve Teslimat
-          </Typography>
-          <Stack
-            sx={{
-              display: "flex",
-              flexDirection: "row",
-              flexWrap: "wrap",
-              alignItems: "center",
-              gap: "10px",
-            }}
+          <Button
+            variant="contained"
+            onClick={handleOpenCreateDeliveryModal}
+            sx={orangeButtonContent}
           >
-            <Button
-              variant="contained"
-              onClick={handleOpenCreateDeliveryModal}
-              sx={orangeButtonContent}
-            >
-              Sipariş Oluştur
-            </Button>
-            <Button
-              variant="contained"
-              onClick={handleOpenCreateSupplierModal}
-              sx={{ ...orangeButtonContent, width: "200px" }}
-            >
-              Tedarikçi Firma Oluştur
-            </Button>
-            <Button
-              variant="contained"
-              onClick={handleOpenCreateVehicleModal}
-              sx={{ ...orangeButtonContent, width: "200px" }}
-            >
-              Tedarik Aracı Oluştur
-            </Button>
-          </Stack>
+            Sipariş Oluştur
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleOpenCreateSupplierModal}
+            sx={{ ...orangeButtonContent, width: "200px" }}
+          >
+            Tedarikçi Firma Oluştur
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleOpenCreateVehicleModal}
+            sx={{ ...orangeButtonContent, width: "200px" }}
+          >
+            Tedarik Aracı Oluştur
+          </Button>
         </Stack>
       </div>
 
@@ -212,7 +189,7 @@ export default function Deliveries() {
         <Stack
           sx={{
             ...tableContent,
-            width: windowScreenWidth > 1150 ? "50%" : "100%", // Güncellendi
+            width: windowScreenWidth > 1150 ? "50%" : "100%",
           }}
         >
           <Stack sx={tableContentHeader}>
@@ -250,7 +227,7 @@ export default function Deliveries() {
         <Stack
           sx={{
             ...tableContent,
-            width: windowScreenWidth > 1150 ? "50%" : "100%", // Güncellendi
+            width: windowScreenWidth > 1150 ? "50%" : "100%",
           }}
         >
           <Stack sx={tableContentHeader}>
@@ -265,6 +242,7 @@ export default function Deliveries() {
               sx={{
                 position: "relative",
                 alignItems: "center",
+                overflow: "auto",
                 top: "65px",
               }}
             >

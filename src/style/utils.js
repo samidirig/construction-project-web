@@ -11,8 +11,8 @@ export const mainContent = {
 
 export const tableContent = {
   position: "relative",
+  paddingBottom:10,
   height: "auto",
-  minHeight: 420,
   display: "flex",
   borderRadius: "20px",
   flexDirection: "column",
@@ -71,7 +71,19 @@ export const orangeButtonContent = {
     bgcolor: "#FF9843",
     color: "#ffffff",
     boxShadow: "0px 0 10px rgba(52, 104, 192, 0.7)",
-    transform: "scale(1.05)",
+    transform: "scale(1.01)",
+  },
+};
+
+export const worksiteCardContent = {
+  pl: 1,
+  width: "100%",
+  height: "180px",
+  borderRadius: "20px",
+  boxShadow: "0px 0 10px rgba(52, 104, 192, 0.3)",
+  transition: "transform 0.3s",
+  "&:hover": {
+    transform: "scale(1.01)",
   },
 };
 
@@ -93,5 +105,69 @@ export const clickButtonWhite = {
   "&:hover": {
     bgcolor: "#ceeafc",
     color: "#000000",
+  },
+};
+
+export const isConfirmButton = {
+  width: 100,
+  height: 30,
+  textAlign: "center",
+  bgcolor: "rgba(134, 167, 252, 0.9)",
+  color: "#fff",
+  borderRadius: "50px",
+  fontFamily: "Arial, Helvatica, sans-serif",
+  fontSize: "14px",
+  cursor: "pointer",
+  textTransform: "inherit",
+  "&:hover": {
+    marginTop: "5px",
+    bgcolor: "rgba(134, 167, 252, 0.9)",
+    color: "#ffffff",
+    boxShadow: "0px 0 10px rgba(52, 104, 192, 0.7)",
+    transform: "scale(1.05)",
+  },
+};
+
+export const isConfirmCard = {
+  mb: 2,
+  p: 1,
+  width: "80%",
+  maxWidth: "80%",
+  height: "auto",
+  backgroundColor: "rgba(255, 152, 67, 0.2)",
+  borderRadius: "20px",
+  boxShadow: "0px 0 10px rgba(52, 104, 192, 0.3)",
+  transition: "transform 0.3s",
+  overflow: "auto",
+  "&:hover": {
+    transform: "scale(1.05)",
+  },
+};
+
+export const projectCardContent = {
+  mb: 2,
+  p: 1,
+  width: "100%",
+  height: "auto",
+  backgroundColor: "rgba(255, 152, 67, 0.2)",
+  borderRadius: "20px",
+  boxShadow: "0px 0 10px rgba(52, 104, 192, 0.3)",
+  transition: "transform 0.3s",
+  "&:hover": {
+    transform: "scale(1.03)",
+  },
+};
+
+export const teamsCardContent = {
+  minWidth: "220px",
+  maxWidth: "90%",
+  minHeight: "150px",
+  height: "150px",
+  backgroundColor: "rgba(255, 152, 67, 0.2)",
+  borderRadius: "20px",
+  boxShadow: "0px 0 10px rgba(52, 104, 192, 0.3)",
+  transition: "transform 0.3s",
+  "&:hover": {
+    transform: "scale(1.01)",
   },
 };

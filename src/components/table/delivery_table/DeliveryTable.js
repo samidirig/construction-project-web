@@ -8,8 +8,9 @@ import {
   TableCell,
   Paper,
   TablePagination,
-  Typography,
+  IconButton,
 } from "@mui/material";
+import SortIcon from "@mui/icons-material/Sort";
 
 export default function DeliveryTable({
   deliveries,
@@ -17,21 +18,51 @@ export default function DeliveryTable({
   companyData,
 }) {
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [sortBy, setSortBy] = useState("");
+  const [sortOrder, setSortOrder] = useState("asc");
+  const rowsPerPage = 3;
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
+  const handleSort = (field) => {
+    const isAsc = sortBy === field && sortOrder === "asc";
+    setSortOrder(isAsc ? "desc" : "asc");
+    setSortBy(field);
   };
 
-  const displayedDeliveries = deliveries.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
+  const sortedDeliveries = [...deliveries].sort((a, b) => {
+    let comparison = 0;
+    if (
+      sortBy === "description" ||
+      sortBy === "receiverName" ||
+      sortBy === "supplierName"
+    ) {
+      comparison = a[sortBy].localeCompare(b[sortBy]);
+    } else if (sortBy === "deliveryTime" || sortBy === "finishTime") {
+      comparison = a[sortBy].seconds - b[sortBy].seconds;
+    }
+    return sortOrder === "asc" ? comparison : -comparison;
+  });
+
+  const notCompletedDeliveriesList = sortedDeliveries.filter(
+    (delivery) => !delivery.isDone
   );
+
+  const completedDeliveriesList = sortedDeliveries.filter(
+    (delivery) => delivery.isDone
+  );
+
+  const displayedDeliveries = isCompleted
+    ? completedDeliveriesList.slice(
+        page * rowsPerPage,
+        page * rowsPerPage + rowsPerPage
+      )
+    : notCompletedDeliveriesList.slice(
+        page * rowsPerPage,
+        page * rowsPerPage + rowsPerPage
+      );
 
   const formatTimestampToDate = (timestamp) => {
     const date = new Date(timestamp.seconds * 1000);
@@ -44,10 +75,42 @@ export default function DeliveryTable({
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Teslimat</TableCell>
-              <TableCell>Alıcı Firma</TableCell>
-              <TableCell>Gönderici Firma</TableCell>
-              <TableCell>Teslimat Tarihi</TableCell>
+              <TableCell>
+                Teslimat
+                <IconButton
+                  size="small"
+                  onClick={() => handleSort("description")}
+                >
+                  <SortIcon />
+                </IconButton>
+              </TableCell>
+              <TableCell>
+                Alıcı Firma
+                <IconButton
+                  size="small"
+                  onClick={() => handleSort("receiverName")}
+                >
+                  <SortIcon />
+                </IconButton>
+              </TableCell>
+              <TableCell>
+                Gönderici Firma
+                <IconButton
+                  size="small"
+                  onClick={() => handleSort("supplierName")}
+                >
+                  <SortIcon />
+                </IconButton>
+              </TableCell>
+              <TableCell>
+                Teslimat Tarihi
+                <IconButton
+                  size="small"
+                  onClick={() => handleSort("deliveryTime")}
+                >
+                  <SortIcon />
+                </IconButton>
+              </TableCell>
               <TableCell>Teslim Durumu</TableCell>
             </TableRow>
           </TableHead>
@@ -72,13 +135,12 @@ export default function DeliveryTable({
         </Table>
       </TableContainer>
       <TablePagination
-        rowsPerPageOptions={[10, 25, 50]}
         component="div"
-        count={deliveries.length}
+        count={notCompletedDeliveriesList.length}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
+        onRowsPerPageChange={() => {}}
       />
     </div>
   );
@@ -89,10 +151,42 @@ export default function DeliveryTable({
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Teslimat</TableCell>
-              <TableCell>Alıcı Firma</TableCell>
-              <TableCell>Gönderici Firma</TableCell>
-              <TableCell>Teslimat Tarihi</TableCell>
+              <TableCell>
+                Teslimat
+                <IconButton
+                  size="small"
+                  onClick={() => handleSort("description")}
+                >
+                  <SortIcon />
+                </IconButton>
+              </TableCell>
+              <TableCell>
+                Alıcı Firma
+                <IconButton
+                  size="small"
+                  onClick={() => handleSort("receiverName")}
+                >
+                  <SortIcon />
+                </IconButton>
+              </TableCell>
+              <TableCell>
+                Gönderici Firma
+                <IconButton
+                  size="small"
+                  onClick={() => handleSort("supplierName")}
+                >
+                  <SortIcon />
+                </IconButton>
+              </TableCell>
+              <TableCell>
+                Teslimat Tarihi
+                <IconButton
+                  size="small"
+                  onClick={() => handleSort("deliveryTime")}
+                >
+                  <SortIcon />
+                </IconButton>
+              </TableCell>
               <TableCell>Teslim Durumu</TableCell>
             </TableRow>
           </TableHead>
@@ -120,15 +214,15 @@ export default function DeliveryTable({
         </Table>
       </TableContainer>
       <TablePagination
-        rowsPerPageOptions={[10, 25, 50]}
         component="div"
-        count={deliveries.length}
+        count={completedDeliveriesList.length}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
+        onRowsPerPageChange={() => {}}
       />
     </div>
   );
+
   return isCompleted ? completedDeliveries : notCompletedDeliveries;
 }
