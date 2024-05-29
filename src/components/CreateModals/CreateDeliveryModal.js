@@ -215,12 +215,19 @@ export default function CreateDeliveryModal({ isOpen, onClose }) {
                 <MenuItem value="Seçiniz" disabled>
                   Seçiniz
                 </MenuItem>
-                {supplierCompanies.length > 0 &&
+                {supplierCompanies.length === 0 ? (
+                  <MenuItem disabled>
+                    Teradikçi firmanız yok sipariş oluşturamazsınız!
+                  </MenuItem>
+                ) : (
+                  supplierCompanies &&
+                  supplierCompanies.length > 0 &&
                   supplierCompanies.map((supplier) => (
                     <MenuItem key={supplier.id} value={supplier}>
                       {supplier.name}
                     </MenuItem>
-                  ))}
+                  ))
+                )}
               </Select>
             </FormControl>
           </div>

@@ -64,13 +64,13 @@ export default function CreateDocumentModal({
           const personnels = await getGivenUsersInformationByIds(
             companyData.personnels
           );
-          setUsersData(personnels);
+          setUsersData(personnels || []);
         } else if (selectedType === "project") {
           const projects = await getCompanyProjects();
-          setProjectsData(projects);
+          setProjectsData(projects || []);
         } else if (selectedType === "worksite") {
           const worksites = await getCompanyWorksites();
-          setWorksitesData(worksites);
+          setWorksitesData(worksites || []);
         }
         setSelectedName(null);
         setSelectedProject(null);
@@ -198,12 +198,19 @@ export default function CreateDocumentModal({
                     <MenuItem value="Seçiniz" disabled>
                       Seçiniz
                     </MenuItem>
-                    {projectsData.length > 0 &&
+                    {projectsData.length === 0 ? (
+                      <MenuItem disabled>
+                        Projeniz yok Döküman ekleyemezsiniz!
+                      </MenuItem>
+                    ) : (
+                      projectsData &&
+                      projectsData.length > 0 &&
                       projectsData.map((project) => (
                         <MenuItem key={project.id} value={project}>
                           {project.name}
                         </MenuItem>
-                      ))}
+                      ))
+                    )}
                   </Select>
                 </FormControl>
               </div>
@@ -228,12 +235,19 @@ export default function CreateDocumentModal({
                     <MenuItem value="Seçiniz" disabled>
                       Seçiniz
                     </MenuItem>
-                    {worksitesData.length > 0 &&
+                    {worksitesData.length === 0 ? (
+                      <MenuItem disabled>
+                        Şantiyeniz yok Döküman ekleyemezsiniz!
+                      </MenuItem>
+                    ) : (
+                      worksitesData &&
+                      worksitesData.length > 0 &&
                       worksitesData.map((worksite) => (
                         <MenuItem key={worksite.id} value={worksite}>
                           {worksite.name}
                         </MenuItem>
-                      ))}
+                      ))
+                    )}
                   </Select>
                 </FormControl>
               </div>
@@ -258,12 +272,19 @@ export default function CreateDocumentModal({
                     <MenuItem value="Seçiniz" disabled>
                       Seçiniz
                     </MenuItem>
-                    {usersData.length > 0 &&
+                    {usersData.length === 0 ? (
+                      <MenuItem disabled>
+                        Personeliniz yok Döküman ekleyemezsiniz!
+                      </MenuItem>
+                    ) : (
+                      usersData &&
+                      usersData.length > 0 &&
                       usersData.map((user) => (
                         <MenuItem key={user.id} value={user}>
                           {user.name}
                         </MenuItem>
-                      ))}
+                      ))
+                    )}
                   </Select>
                 </FormControl>
               </div>
@@ -288,7 +309,22 @@ export default function CreateDocumentModal({
               </div>
               {/* file upload */}
               <div className="modal-input-content">
-                <Button variant="contained" component="label">
+                <Button
+                  variant="contained"
+                  component="label"
+                  sx={{
+                    ...orangeButtonContent,
+                    bgcolor: "rgba(134, 167, 252, 0.9)",
+                    width: 100,
+                    height: 30,
+                    fontSize: "12px",
+                    "&:hover": {
+                      bgcolor: "rgba(134, 167, 252, 0.7)",
+                      color: "#ffffff",
+                      boxShadow: "0px 0 10px rgba(52, 104, 192, 0.7)",
+                    },
+                  }}
+                >
                   PDF Yükle
                   <input
                     type="file"

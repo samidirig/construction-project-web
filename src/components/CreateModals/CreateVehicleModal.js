@@ -160,12 +160,19 @@ export default function CreateVehicleModal({ isOpen, onClose }) {
                 <MenuItem value="Seçiniz" disabled>
                   Seçiniz
                 </MenuItem>
-                {supplierCompanies.length > 0 &&
+                {supplierCompanies.length === 0 ? (
+                  <MenuItem disabled>
+                    Teradikçi firmanız yok araç oluşturamazsınız!
+                  </MenuItem>
+                ) : (
+                  supplierCompanies &&
+                  supplierCompanies.length > 0 &&
                   supplierCompanies.map((supplier) => (
                     <MenuItem key={supplier.id} value={supplier}>
                       {supplier.name}
                     </MenuItem>
-                  ))}
+                  ))
+                )}
               </Select>
             </FormControl>
           </div>

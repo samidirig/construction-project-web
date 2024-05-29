@@ -11,7 +11,7 @@ export const mainContent = {
 
 export const tableContent = {
   position: "relative",
-  paddingBottom:10,
+  paddingBottom: 10,
   height: "auto",
   display: "flex",
   borderRadius: "20px",
@@ -71,18 +71,6 @@ export const orangeButtonContent = {
     bgcolor: "#FF9843",
     color: "#ffffff",
     boxShadow: "0px 0 10px rgba(52, 104, 192, 0.7)",
-    transform: "scale(1.01)",
-  },
-};
-
-export const worksiteCardContent = {
-  pl: 1,
-  width: "100%",
-  height: "180px",
-  borderRadius: "20px",
-  boxShadow: "0px 0 10px rgba(52, 104, 192, 0.3)",
-  transition: "transform 0.3s",
-  "&:hover": {
     transform: "scale(1.01)",
   },
 };
@@ -158,6 +146,46 @@ export const projectCardContent = {
   },
 };
 
+export const projectSliderCardContent = {
+  minWidth: "250px",
+  maxWidth: "90%",
+  minHeight: "220px",
+  height: "auto",
+  backgroundColor: "rgba(255, 152, 67, 0.2)",
+  borderRadius: "20px",
+  boxShadow: "0px 0 10px rgba(52, 104, 192, 0.3)",
+  transition: "transform 0.3s",
+  "&:hover": {
+    transform: "scale(1.01)",
+  },
+};
+
+export const worksiteCardContent = {
+  pl: 1,
+  width: "100%",
+  height: "180px",
+  borderRadius: "20px",
+  boxShadow: "0px 0 10px rgba(52, 104, 192, 0.3)",
+  transition: "transform 0.3s",
+  "&:hover": {
+    transform: "scale(1.01)",
+  },
+};
+
+export const worksiteSliderCardContent = {
+  minWidth: "220px",
+  maxWidth: "90%",
+  minHeight: "150px",
+  height: "auto",
+  backgroundColor: "rgba(255, 152, 67, 0.2)",
+  borderRadius: "20px",
+  boxShadow: "0px 0 10px rgba(52, 104, 192, 0.3)",
+  transition: "transform 0.3s",
+  "&:hover": {
+    transform: "scale(1.01)",
+  },
+};
+
 export const teamsCardContent = {
   minWidth: "220px",
   maxWidth: "90%",
@@ -169,5 +197,19 @@ export const teamsCardContent = {
   transition: "transform 0.3s",
   "&:hover": {
     transform: "scale(1.01)",
+  },
+};
+
+export const companyCardContent = {
+  mb: 2,
+  p: 1,
+  width: "100%",
+  height: "auto",
+  backgroundColor: "rgba(255, 152, 67, 0.2)",
+  borderRadius: "20px",
+  boxShadow: "0px 0 10px rgba(52, 104, 192, 0.3)",
+  transition: "transform 0.3s",
+  "&:hover": {
+    transform: "scale(1.03)",
   },
 };

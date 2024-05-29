@@ -70,7 +70,6 @@ export default function Profile() {
     }
     fetchUserData();
   }, []);
-  console.log(userData);
 
   useEffect(() => {
     async function fetchCompanyData() {
@@ -85,7 +84,6 @@ export default function Profile() {
     }
     fetchCompanyData();
   }, []);
-  console.log(companyData);
 
   useEffect(() => {
     async function fetchCompanyDocuments() {
@@ -104,7 +102,6 @@ export default function Profile() {
     }
     fetchCompanyDocuments();
   }, [confirmationTrigger]);
-  console.log(companyDocuments);
 
   const handleSaveProfile = async () => {
     try {
@@ -449,20 +446,21 @@ export default function Profile() {
                         color: "#011e30",
                       }}
                       src={
-                        companyData.profileImage &&
-                        companyData.profileImage.startsWith("http")
-                          ? companyData.profileImage
+                        companyData.profileImg &&
+                        companyData.profileImg.startsWith("http")
+                          ? companyData.profileImg
                           : ""
                       }
                     >
-                      {(!companyData.profileImage ||
-                        !companyData.profileImage.startsWith("http")) &&
-                      companyData.name
-                        ? companyData.name
-                            .split(" ")
-                            .map((word) => word[0])
-                            .join("")
-                        : "A"}
+                      {companyData.profileImg &&
+                        ((!companyData.profileImg ||
+                          !companyData.profileImg.startsWith("http")) &&
+                        companyData.name
+                          ? companyData.name
+                              .split(" ")
+                              .map((word) => word[0])
+                              .join("")
+                          : "A")}
                     </Avatar>
                   </Tooltip>
                   <Stack

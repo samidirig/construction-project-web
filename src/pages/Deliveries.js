@@ -21,7 +21,7 @@ import CreateSupplierModal from "../components/CreateModals/CreateSupplierModal"
 import TopImage from "../components/TopImage";
 
 export default function Deliveries() {
-  const [deliveryData, setDeliveryData] = useState({});
+  const [deliveryData, setDeliveryData] = useState(null);
   const [companyData, setCompanyData] = useState({});
   const [loading, setLoading] = useState(true);
   const [confirmationTrigger, setConfirmationTrigger] = useState(false);
@@ -51,7 +51,7 @@ export default function Deliveries() {
   useEffect(() => {
     const fetchData = () => {
       getCompanyDeliveries((deliveries) => {
-        setDeliveryData(deliveries || []);
+        setDeliveryData(deliveries || null);
         setLoading(false);
       });
     };
@@ -168,11 +168,7 @@ export default function Deliveries() {
               borderRadius: "20px",
             }}
           >
-            {deliveryData.length > 0 ? (
-              <MapDeliveries deliveries={deliveryData} />
-            ) : (
-              <Typography marginTop={10}>Harita yüklenemedi!</Typography>
-            )}
+            <MapDeliveries deliveries={deliveryData} />
           </Stack>
         )}
       </Stack>
@@ -208,7 +204,7 @@ export default function Deliveries() {
                 top: "65px",
               }}
             >
-              {deliveryData.length > 0 ? (
+              {deliveryData && deliveryData.length > 0 ? (
                 <DeliveryTable
                   deliveries={deliveryData}
                   isCompleted={false}
@@ -216,7 +212,7 @@ export default function Deliveries() {
                 />
               ) : (
                 <Typography marginTop={10}>
-                  Firmanıza ait teslimat bulunmamaktadır.
+                  Aktif ait teslimatlar bulunmamaktadır.
                 </Typography>
               )}
             </Stack>
@@ -246,7 +242,7 @@ export default function Deliveries() {
                 top: "65px",
               }}
             >
-              {deliveryData.length > 0 ? (
+              {deliveryData && deliveryData.length > 0 ? (
                 <DeliveryTable
                   deliveries={deliveryData}
                   isCompleted={true}

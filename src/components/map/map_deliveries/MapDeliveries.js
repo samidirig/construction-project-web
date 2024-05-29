@@ -111,28 +111,30 @@ export default function MapDeliveries({ deliveries }) {
         onLoad={onMapLoad}
       >
         <>
-          {deliveries.map(
-            (delivery) =>
-              !delivery.isDone && (
-                <MarkerF
-                  key={delivery.id}
-                  position={{
-                    lat: delivery.receiverLoc && delivery.receiverLoc.latitude,
-                    lng: delivery.receiverLoc && delivery.receiverLoc.longitude,
-                  }}
-                  icon={{
-                    url: delivery.isDone ? DeliveryWait : DeliveryWorking,
-                    scaledSize: new window.google.maps.Size(30, 30),
-                    origin: new window.google.maps.Point(0, 0),
-                    anchor: new window.google.maps.Point(15, 15),
-                  }}
-                  onClick={() => {
-                    handleDeliveryClick(delivery);
-                  }}
-                  visible={delivery.visible}
-                />
-              )
-          )}
+          {deliveries && deliveries.map(
+              (delivery) =>
+                !delivery.isDone && (
+                  <MarkerF
+                    key={delivery.id}
+                    position={{
+                      lat:
+                        delivery.receiverLoc && delivery.receiverLoc.latitude,
+                      lng:
+                        delivery.receiverLoc && delivery.receiverLoc.longitude,
+                    }}
+                    icon={{
+                      url: delivery.isDone ? DeliveryWait : DeliveryWorking,
+                      scaledSize: new window.google.maps.Size(30, 30),
+                      origin: new window.google.maps.Point(0, 0),
+                      anchor: new window.google.maps.Point(15, 15),
+                    }}
+                    onClick={() => {
+                      handleDeliveryClick(delivery);
+                    }}
+                    visible={delivery.visible}
+                  />
+                )
+            )}
 
           {selected && selected.id && (
             <InfoWindow
@@ -239,7 +241,6 @@ export default function MapDeliveries({ deliveries }) {
   );
 }
 
-
 // const [deliveryType, setDeliveryType] = useState(false);
 // const handleDeliveryTypeChange = () => {
 //   setDeliveryType(!deliveryType);
@@ -269,7 +270,8 @@ export default function MapDeliveries({ deliveries }) {
 //   ) : null
 // )}
 
-{/* <div className="maptype-button" onClick={handleDeliveryTypeChange}>
+{
+  /* <div className="maptype-button" onClick={handleDeliveryTypeChange}>
 <Button
   style={{
     backgroundColor: "#fff",
@@ -285,4 +287,5 @@ export default function MapDeliveries({ deliveries }) {
     ? "Tamamlanan Teslimatlar"
     : "Bekleyen Teslimatlar"}
 </Button>
-</div> */}
+</div> */
+}

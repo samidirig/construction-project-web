@@ -41,6 +41,7 @@ const Topbar = () => {
       display: "Projeler",
       icon: <FaProjectDiagram  />,
       to: "/projects",
+      // to: "/visors",
       section: "projects",
     },
     {

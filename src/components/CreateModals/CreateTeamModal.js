@@ -186,12 +186,19 @@ export default function CreateTeamModal({ isOpen, onClose }) {
                 <MenuItem value="Seçiniz" disabled>
                   Seçiniz
                 </MenuItem>
-                {worksitesData.length > 0 &&
-                  worksitesData.map((worksite) => (
-                    <MenuItem key={worksite.id} value={worksite}>
-                      {worksite.name}
-                    </MenuItem>
-                  ))}
+                {worksitesData.length === 0 ? (
+                      <MenuItem disabled>
+                        Şantiyeniz yok Takım oluşturamazsınız!
+                      </MenuItem>
+                    ) : (
+                      worksitesData &&
+                      worksitesData.length > 0 &&
+                      worksitesData.map((worksite) => (
+                        <MenuItem key={worksite.id} value={worksite}>
+                          {worksite.name}
+                        </MenuItem>
+                      ))
+                    )}
               </Select>
             </FormControl>
           </div>

@@ -53,19 +53,25 @@ export const addCompanyWithUser = async (userData, companyData) => {
   try {
     const userId = userData.id;
     const companyCollectionRef = collection(db, "companies");
+    const userDocRef = doc(db, "users", userId);
     const companyDocRef = await addDoc(companyCollectionRef, companyData);
     const companyId = companyDocRef.id;
     const updatedUserData = {
       ...userData,
+      id: userId,
+      role: "companyManager",
       companyId: companyId,
+      profileImage: null,
     };
 
-    const userDocRef = doc(db, "users", userId);
     await setDoc(userDocRef, updatedUserData);
 
     const updatedCompanyData = {
       ...companyData,
       id: companyId,
+      managerId: userId,
+      profileImage: null,
+      personnels: [],
     };
 
     await setDoc(doc(db, "companies", companyId), updatedCompanyData);
@@ -245,43 +251,6 @@ export const getGivenUsersInformationByIds = async (userIds) => {
     return [];
   }
 };
-
-
-// export const getGivenWorksiteIdsInformationByIds = async (worksiteIds) => {
-//   try {
-//     if (worksiteIds && worksiteIds.length > 0) {
-//       const worksiteInformations = [];
-//       for (const worksiteId of worksiteIds) {
-//         if (worksiteId) {
-//           const worksiteRef = doc(db, "worksites", worksiteId);
-//           const worksiteDoc = await getDoc(worksiteRef);
-//           if (worksiteDoc.exists()) {
-//             const worksiteData = worksiteDoc.data();
-//             const worksite = {
-//               worksiteEmail: worksiteData.email,
-//               worksiteName: worksiteData.name,
-//               worksiteSurname: worksiteData.surname,
-//               worksiteId: worksiteData.id,
-//               worksiteRole: worksiteData.role,
-//               worksiteImage: worksiteData.profileImg,
-//             };
-//             worksiteInformations.push(worksite);
-//           } else {
-//             console.log("User data not found for worksiteId:", worksiteId);
-//           }
-//         }
-//       }
-
-//       return worksiteInformations;
-//     } else {
-//       console.log("worksiteIds not filled");
-//       return [];
-//     }
-//   } catch (error) {
-//     console.error("Error getting worksites information:", error);
-//     return [];
-//   }
-// };
 
 export const checkUserByEmail = async (email) => {
   try {
@@ -946,7 +915,9 @@ export const getGivenWorksitesInformationByIds = (worksiteIds, callback) => {
               };
 
               // Update or add the worksite information in the array
-              const existingIndex = worksiteInformations.findIndex(w => w.worksiteId === worksiteId);
+              const existingIndex = worksiteInformations.findIndex(
+                (w) => w.worksiteId === worksiteId
+              );
               if (existingIndex > -1) {
                 worksiteInformations[existingIndex] = worksite;
               } else {
@@ -1087,14 +1058,14 @@ export const getCompanyDeliveries = (callback) => {
         });
       } else {
         console.log("companyId is not found");
-        callback([]);
+        callback(null);
       }
     };
 
     fetchDeliveries();
   } catch (error) {
     console.error("Error getting deliveries information:", error);
-    callback([]);
+    callback(null);
   }
 };
 

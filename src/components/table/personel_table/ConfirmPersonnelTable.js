@@ -161,15 +161,17 @@ export default function ConfirmPersonnelTable({
                     )}
                   </Typography>
                 </TableCell>
-                <TableCell>
-                  <IconButton
-                    onClick={() => handleOpenPersonnelDetailsModal(personnel)}
-                  >
-                    <AssignmentIndIcon
-                      sx={{ color: "rgba(134, 167, 252, 1)" }}
-                    />
-                  </IconButton>
-                </TableCell>
+                {personnel.isConfirmedCompany && (
+                  <TableCell>
+                    <IconButton
+                      onClick={() => handleOpenPersonnelDetailsModal(personnel)}
+                    >
+                      <AssignmentIndIcon
+                        sx={{ color: "rgba(134, 167, 252, 1)" }}
+                      />
+                    </IconButton>
+                  </TableCell>
+                )}
               </TableRow>
             ))}
           </TableBody>
