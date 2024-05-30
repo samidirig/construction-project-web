@@ -1,9 +1,22 @@
-import { Card, CardContent, Typography } from "@mui/material";
-import React from "react";
+import {
+  Button,
+  Card,
+  CardContent,
+  IconButton,
+  Typography,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+} from "@mui/material";
+import React, { useState } from "react";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { teamsCardContent } from "../style/utils";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { deleteCompanyTeam } from "../config/firebase";
 
 const NextArrow = (props) => {
   const { className, style, onClick } = props;
@@ -42,7 +55,28 @@ const formatTimestampToDate = (timestamp) => {
   return date.toLocaleDateString();
 };
 
-export default function TeamSlider({ cardContent }) {
+export default function TeamSlider({ cardContent, confirmationTrigger }) {
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedTeam, setSelectedTeam] = useState(null);
+
+  const handleDeleteClick = (team) => {
+    setSelectedTeam(team);
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setSelectedTeam(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (selectedTeam) {
+      await deleteCompanyTeam(selectedTeam.id);
+      handleCloseDialog();
+      confirmationTrigger();
+    }
+  };
+
   const settings = {
     dots: true,
     infinite: false,
@@ -108,10 +142,19 @@ export default function TeamSlider({ cardContent }) {
               key={index}
               sx={{
                 ...teamsCardContent,
+                position: "relative",
+                overflow: "visible",
                 width: "400px",
               }}
             >
               <CardContent>
+                <IconButton
+                  aria-label="delete"
+                  onClick={() => handleDeleteClick(content)}
+                  sx={{ position: "absolute", top: 8, right: 8 }}
+                >
+                  <DeleteIcon />
+                </IconButton>
                 <Typography variant="subtitle1" gutterBottom>
                   Takım İsmi: {content.teamName}
                 </Typography>
@@ -144,9 +187,18 @@ export default function TeamSlider({ cardContent }) {
               <Card
                 sx={{
                   ...teamsCardContent,
+                  position: "relative",
+                  overflow: "visible",
                 }}
               >
                 <CardContent>
+                  <IconButton
+                    aria-label="delete"
+                    onClick={() => handleDeleteClick(content)}
+                    sx={{ position: "absolute", top: 8, right: 8 }}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
                   <Typography variant="subtitle1" gutterBottom>
                     Takım İsmi: {content.teamName}
                   </Typography>
@@ -174,6 +226,29 @@ export default function TeamSlider({ cardContent }) {
           ))}
         </Slider>
       )}
+
+      <Dialog
+        open={openDialog}
+        onClose={handleCloseDialog}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">{"Takım Silme Onayı"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            {selectedTeam &&
+              `Bu "${selectedTeam.teamName}" isimli takımı silmek istediğinizden emin misiniz?`}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} color="primary">
+            İptal
+          </Button>
+          <Button onClick={handleConfirmDelete} color="primary" autoFocus>
+            Evet
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }

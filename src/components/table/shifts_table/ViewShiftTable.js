@@ -18,6 +18,7 @@ import {
 } from "@mui/material";
 import SortIcon from "@mui/icons-material/Sort";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { deleteWorksiteShift } from "../../../config/firebase";
 // import { deleteWorksiteShift } from "../../../config/firebase";
 
 export default function ViewShiftTable({ shifts, worksiteId }) {
@@ -65,11 +66,11 @@ export default function ViewShiftTable({ shifts, worksiteId }) {
 
   const handleDeleteWorksiteShift = async (shiftId) => {
     try {
-      if (shiftId && worksiteId) {
-        // await deleteWorksiteShift(shiftId, worksiteId);
+      if (shiftId ) {
+        await deleteWorksiteShift(shiftId);
         handleUpdateShiftDatas(shiftId);
         handleClose();
-        console.log("Shift silindi " + shiftId + " " + worksiteId);
+        console.log("Shift silindi " + shiftId );
       }
     } catch (error) {
       console.error(

@@ -35,34 +35,27 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const projects = await getCompanyProjects();
+    const fetchData = () => {
+      getCompanyProjects((projects) => {
         setProjectsData(projects || []);
-      } catch (error) {
-        console.error("Error fetching projects:", error);
-      } finally {
         setLoading(false);
-      }
-    }
+      });
+    };
 
     fetchData();
   }, []);
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const worksites = await getCompanyWorksites();
+    const fetchData = () => {
+      getCompanyWorksites((worksites) => {
         setWorksitesData(worksites || []);
-      } catch (error) {
-        console.error("Error fetching worksites:", error);
-      } finally {
         setLoading(false);
-      }
-    }
+      });
+    };
 
     fetchData();
   }, []);
+  
   console.log(worksitesData);
   const handleNavigateToWorksites = () => {
     navigate("/worksites");

@@ -28,7 +28,6 @@ import {
   ref,
   uploadBytes,
 } from "firebase/storage";
-import { teamsCardContent } from "../style/utils";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCb5vBHVNRNRkU0IiJOypt1T_P_kHwLoeQ",
@@ -561,6 +560,30 @@ export const getCompanyTypeDocuments = async (documentTypeName) => {
   }
 };
 
+export const deleteCompanyDocument = async (documentId, documentURL) => {
+  if (!documentId || !documentURL) {
+    console.error("Hata: documentId veya documentURL undefined veya null");
+    return false;
+  }
+  try {
+    const documentDocRef = doc(db, "documents", documentId);
+
+    // Firebase Storage'daki dosyayı silme
+    const storage = getStorage();
+    const documentRef = ref(storage, documentURL);
+    await deleteObject(documentRef);
+
+    // Firestore'daki dökümanı silme
+    await deleteDoc(documentDocRef);
+
+    console.log("Döküman ve dosya başarıyla silindi.");
+    return true;
+  } catch (error) {
+    console.error("Döküman silinirken bir hata oluştu:", error);
+    return false;
+  }
+};
+
 // worksite
 export const createNewWorksite = async (worksiteData) => {
   try {
@@ -587,35 +610,63 @@ export const createNewWorksite = async (worksiteData) => {
   }
 };
 
-export const getCompanyWorksites = async () => {
+export const getCompanyWorksites = (callback) => {
+  if (typeof callback !== "function") {
+    console.error("Provided callback is not a function");
+    return;
+  }
+
   try {
-    const company = await getCompanyByManagerId();
-    const companyId = company.id;
+    const fetchWorksites = async () => {
+      const company = await getCompanyByManagerId();
+      const companyId = company.id;
 
-    if (companyId) {
-      const worksitesRef = collection(db, "worksites");
-      const querySnapshot = await getDocs(
-        query(worksitesRef, where("companyId", "==", companyId))
-      );
+      if (companyId) {
+        const worksitesRef = collection(db, "worksites");
+        const worksitesQuery = query(
+          worksitesRef,
+          where("companyId", "==", companyId)
+        );
 
-      if (!querySnapshot.empty) {
-        const worksitesDocs = querySnapshot.docs;
+        onSnapshot(worksitesQuery, (querySnapshot) => {
+          if (!querySnapshot.empty) {
+            const worksitesDocs = querySnapshot.docs;
+            const worksitesData = worksitesDocs.map((doc) => {
+              const worksiteData = doc.data();
+              return {
+                id: doc.id,
+                companyId: worksiteData.companyId,
+                name: worksiteData.name,
+                createdTime: worksiteData.createdTime,
+                city: worksiteData.city,
+                district: worksiteData.district,
+                geopoint: worksiteData.geopoint,
+                neighborhood: worksiteData.neighborhood,
+                worksiteImage: worksiteData.worksiteImage,
+                personnels: worksiteData.personnels,
+                projectId: worksiteData.projectId,
+                startDate: worksiteData.startDate,
+                finishDate: worksiteData.finishDate,
+              };
+            });
 
-        const worksitesData = worksitesDocs.map((doc) => doc.data());
-
-        console.log("Worksites Data:", worksitesData);
-        return worksitesData;
+            console.log("Worksites Data:", worksitesData);
+            callback(worksitesData); // Callback ile frontend'e verileri gönder
+          } else {
+            console.log("No worksites found for the given companyId");
+            callback([]); // Callback ile frontend'e boş liste gönder
+          }
+        });
       } else {
-        console.log("No worksites found for the given companyId");
-        return null;
+        console.log("companyId is not available in localStorage");
+        callback([]); // Callback ile frontend'e boş liste gönder
       }
-    } else {
-      console.log("companyId is not available in localStorage");
-      return null;
-    }
+    };
+
+    fetchWorksites();
   } catch (error) {
     console.error("Error getting worksites information:", error);
-    return null;
+    callback([]); // Callback ile frontend'e boş liste gönder
   }
 };
 
@@ -654,7 +705,7 @@ export const getWorksiteInformationById = async (worksiteId) => {
         return null;
       }
     } else {
-      console.log("worksite is not authenticated");
+      console.log("worksite is not founded");
       return null;
     }
   } catch (error) {
@@ -769,6 +820,7 @@ export const createNewShift = async (shiftData) => {
 export const deleteWorksitePersonnel = async (personnelId, worksiteId) => {
   try {
     if (personnelId && worksiteId) {
+      // Worksite'tan personnelId'yi silme
       const worksiteDocRef = doc(db, "worksites", worksiteId);
       const worksiteSnapshot = await getDoc(worksiteDocRef);
 
@@ -777,6 +829,29 @@ export const deleteWorksitePersonnel = async (personnelId, worksiteId) => {
         const personnels = worksiteData.personnels;
         const updatedPersonnels = personnels.filter((id) => id !== personnelId);
         await updateDoc(worksiteDocRef, { personnels: updatedPersonnels });
+      }
+
+      // User collection'da personnelId ile ilgili güncellemeleri yapma
+      const userDocRef = doc(db, "users", personnelId);
+      const userSnapshot = await getDoc(userDocRef);
+
+      if (userSnapshot.exists()) {
+        const userData = userSnapshot.data();
+        const worksiteIds = userData.worksiteIds || [];
+        const activeWorksite = userData.activeWorksite;
+
+        const updatedWorksiteIds = worksiteIds.filter(
+          (id) => id !== worksiteId
+        );
+        const updates = {
+          worksiteIds: updatedWorksiteIds,
+        };
+
+        if (activeWorksite === worksiteId) {
+          updates.activeWorksite = "";
+        }
+
+        await updateDoc(userDocRef, updates);
       }
     }
   } catch (error) {
@@ -942,6 +1017,101 @@ export const getGivenWorksitesInformationByIds = (worksiteIds, callback) => {
   } catch (error) {
     console.error("Error getting Worksites information:", error);
     callback([]);
+  }
+};
+
+export const deleteWorksiteShift = async (shiftId) => {
+  try {
+    if (shiftId) {
+      const teamDocRef = doc(db, "shifts", shiftId);
+      await deleteDoc(teamDocRef);
+    } else {
+      throw new Error("Invalid shiftId");
+    }
+  } catch (error) {
+    console.error("Error while deleting personnel from worksite:", error);
+    if (error.code) {
+      console.error("Error code:", error.code);
+    }
+  }
+};
+
+export const getPersonnelNotOnWorksite = async (worksiteId) => {
+  try {
+    if (worksiteId) {
+      // Role "personnel" olan kullanıcıları alıyoruz
+      const usersQuery = query(
+        collection(db, "users"),
+        where("role", "==", "personnel")
+      );
+
+      const usersSnapshot = await getDocs(usersQuery);
+      const personnelNotOnWorksite = [];
+
+      // worksiteIds array'inde worksiteId'yi içermeyen kullanıcıları filtreliyoruz
+      usersSnapshot.forEach((doc) => {
+        const userData = doc.data();
+        if (
+          !userData.worksiteIds ||
+          !userData.worksiteIds.includes(worksiteId)
+        ) {
+          const user = {
+            userEmail: userData.email,
+            userName: userData.name,
+            userSurname: userData.surname,
+            userId: userData.id,
+            userRole: userData.role,
+            userImage: userData.profileImg,
+          };
+          personnelNotOnWorksite.push(user);
+        }
+      });
+
+      return personnelNotOnWorksite;
+    } else {
+      console.log("not founded worksite");
+      return null;
+    }
+  } catch (error) {
+    console.error("Error while getting personnel not on worksite:", error);
+    if (error.code) {
+      console.error("Error code:", error.code);
+    }
+    return null;
+  }
+};
+
+export const addPersonnelToWorksite = async (worksiteId, userIds) => {
+  try {
+    if (worksiteId && userIds && Array.isArray(userIds) && userIds.length > 0) {
+      // User dökümanlarını güncelleme işlemi
+      const userUpdates = userIds.map(async (userId) => {
+        const userDocRef = doc(db, "users", userId);
+        await updateDoc(userDocRef, {
+          worksiteIds: arrayUnion(worksiteId),
+        });
+      });
+
+      await Promise.all(userUpdates);
+
+      // Worksite dökümanını güncelleme işlemi
+      const worksiteDocRef = doc(db, "worksites", worksiteId);
+      await updateDoc(worksiteDocRef, {
+        personnels: arrayUnion(...userIds),
+      });
+
+      console.log("Personnel successfully added to the worksite");
+      return true;
+    } else {
+      console.log("not founded worksite");
+      return null;
+    }
+  } catch (error) {
+    console.error("Error while adding new personnels to worksite:", error);
+    if (error.code) {
+      console.error("Error code:", error.code);
+    }
+    return false;
   }
 };
 
@@ -1115,6 +1285,26 @@ export const getSupplierCompanies = async () => {
   }
 };
 
+export const updateWorksiteInformation = async (
+  worksiteId,
+  name,
+  startDate,
+  finishDate
+) => {
+  try {
+    const worksiteRef = doc(db, "worksites", worksiteId);
+    await updateDoc(worksiteRef, {
+      name,
+      startDate,
+      finishDate,
+    });
+    console.log("Worksite information updated successfully.");
+  } catch (error) {
+    console.error("Error updating university information:", error);
+    throw error;
+  }
+};
+
 // projects
 export const createNewProject = async (projectData) => {
   try {
@@ -1136,35 +1326,59 @@ export const createNewProject = async (projectData) => {
   }
 };
 
-export const getCompanyProjects = async () => {
+export const getCompanyProjects = (callback) => {
+  if (typeof callback !== "function") {
+    console.error("Provided callback is not a function");
+    return;
+  }
+
   try {
-    const company = await getCompanyByManagerId();
-    const companyId = company.id;
+    const fetchProjects = async () => {
+      const company = await getCompanyByManagerId();
+      const companyId = company.id;
 
-    if (companyId) {
-      const projectsRef = collection(db, "projects");
-      const querySnapshot = await getDocs(
-        query(projectsRef, where("companyId", "==", companyId))
-      );
+      if (companyId) {
+        const projectsRef = collection(db, "projects");
+        const projectsQuery = query(
+          projectsRef,
+          where("companyId", "==", companyId)
+        );
 
-      if (!querySnapshot.empty) {
-        const projectsDocs = querySnapshot.docs;
+        onSnapshot(projectsQuery, (querySnapshot) => {
+          if (!querySnapshot.empty) {
+            const projectsDocs = querySnapshot.docs;
+            const projectsData = projectsDocs.map((doc) => {
+              const projectData = doc.data();
+              return {
+                id: doc.id,
+                name: projectData.name,
+                budget: projectData.budget,
+                city: projectData.city,
+                createdTime: projectData.createdTime,
+                finishDate: projectData.finishDate,
+                projectImage: projectData.projectImage,
+                startDate: projectData.startDate,
+                worksites: projectData.worksites,
+              };
+            });
 
-        const projectsData = projectsDocs.map((doc) => doc.data());
-
-        console.log("Projects Data:", projectsData);
-        return projectsData;
+            console.log("Projects Data:", projectsData);
+            callback(projectsData); // Callback ile frontend'e verileri gönder
+          } else {
+            console.log("No projects found for the given companyId");
+            callback([]); // Callback ile frontend'e boş liste gönder
+          }
+        });
       } else {
-        console.log("No projects found for the given companyId");
-        return null;
+        console.log("companyId is not available in localStorage");
+        callback([]); // Callback ile frontend'e boş liste gönder
       }
-    } else {
-      console.log("companyId is not available in localStorage");
-      return null;
-    }
+    };
+
+    fetchProjects();
   } catch (error) {
     console.error("Error getting projects information:", error);
-    return null;
+    callback([]); // Callback ile frontend'e boş liste gönder
   }
 };
 
@@ -1209,6 +1423,95 @@ export const getProjectNameById = async (projectId) => {
   } catch (error) {
     console.error("Error getting project information:", error);
     return null;
+  }
+};
+
+export const deleteProject = async (projectId) => {
+  try {
+    const projectDocRef = doc(db, "projects", projectId);
+    const projectSnapshot = await getDoc(projectDocRef);
+    if (!projectSnapshot.exists()) {
+      throw new Error("Project not found");
+    }
+
+    // delete project worksites
+    const projectData = projectSnapshot.data();
+    if (projectData.worksites && projectData.worksites.length > 0) {
+      const deleteWorksitesPromises = projectData.worksites.map(
+        async (worksiteId) => {
+          await deleteWorksite(worksiteId);
+        }
+      );
+      await Promise.all(deleteWorksitesPromises);
+    }
+
+    // delete project documents
+    const documentsQuery = query(
+      collection(db, "documents"),
+      where("projectId", "==", projectId)
+    );
+    const documentsSnapshot = await getDocs(documentsQuery);
+    documentsSnapshot.forEach(async (documentDoc) => {
+      await deleteDoc(documentDoc.ref);
+    });
+
+    const documentTypeId = await getDocumentType("project");
+    const storageRef = ref(storage, `documents/${documentTypeId}/${projectId}`);
+
+    const deleteFolderContents = async (folderRef) => {
+      const list = await listAll(folderRef);
+      const deletePromises = list.items.map((itemRef) => deleteObject(itemRef));
+      await Promise.all(deletePromises);
+
+      const subFolderDeletePromises = list.prefixes.map((subFolderRef) =>
+        deleteFolderContents(subFolderRef)
+      );
+      await Promise.all(subFolderDeletePromises);
+    };
+
+    await deleteFolderContents(storageRef);
+
+    // remove project from users
+    const usersQuery = query(
+      collection(db, "users"),
+      where("projectIds", "array-contains", projectId)
+    );
+    const usersSnapshot = await getDocs(usersQuery);
+    usersSnapshot.forEach(async (userDoc) => {
+      await updateDoc(userDoc.ref, {
+        projectIds: arrayRemove(projectId),
+      });
+    });
+
+    // delete project from collection
+    await deleteDoc(projectDocRef);
+  } catch (error) {
+    console.error("Error while deleting project:", error);
+    if (error.code) {
+      console.error("Error code:", error.code);
+    }
+  }
+};
+
+export const updateProjectInformation = async (
+  projectId,
+  name,
+  startDate,
+  finishDate,
+  budget
+) => {
+  try {
+    const projectRef = doc(db, "projects", projectId);
+    await updateDoc(projectRef, {
+      name,
+      startDate,
+      finishDate,
+      budget,
+    });
+    console.log("Project information updated successfully.");
+  } catch (error) {
+    console.error("Error updating university information:", error);
+    throw error;
   }
 };
 
@@ -1495,6 +1798,100 @@ export const deletePersonelActiveWorksite = async (personnelId) => {
       "Kullanıcı aktif şantiye sorgulanırken bir hata oluştu:",
       error
     );
+    return false;
+  }
+};
+
+export const deleteCompanyTeam = async (teamId) => {
+  if (!teamId) {
+    console.error("Hata: teamId undefined veya null");
+    return false;
+  }
+  try {
+    const teamDocRef = doc(db, "teams", teamId);
+    await deleteDoc(teamDocRef);
+  } catch (error) {
+    console.error("Takım silinirken bir hata oluştu:", error);
+    return false;
+  }
+};
+
+export const deletePersonnel = async (personnelId) => {
+  if (!personnelId) {
+    console.error("Hata: personnelId undefined veya null");
+    return false;
+  }
+  try {
+    const companyQuery = query(
+      collection(db, "companies"),
+      where("personnels", "array-contains", personnelId)
+    );
+    const companySnapshot = await getDocs(companyQuery);
+    companySnapshot.forEach(async (companyDoc) => {
+      await updateDoc(companyDoc.ref, {
+        personnels: arrayRemove(personnelId),
+      });
+    });
+
+    const worksiteQuery = query(
+      collection(db, "worksites"),
+      where("personnels", "array-contains", personnelId)
+    );
+    const worksiteSnapshot = await getDocs(worksiteQuery);
+    worksiteSnapshot.forEach(async (worksiteDoc) => {
+      await updateDoc(worksiteDoc.ref, {
+        personnels: arrayRemove(personnelId),
+      });
+    });
+
+    const teamsQuery = query(
+      collection(db, "teams"),
+      where("personnels", "array-contains", personnelId)
+    );
+    const teamsSnapshot = await getDocs(teamsQuery);
+    teamsSnapshot.forEach(async (teamDoc) => {
+      await updateDoc(teamDoc.ref, {
+        personnels: arrayRemove(personnelId),
+      });
+    });
+
+    const shiftsQuery = query(
+      collection(db, "shifts"),
+      where("userId", "==", personnelId)
+    );
+    const shiftsSnapshot = await getDocs(shiftsQuery);
+    shiftsSnapshot.forEach(async (shiftDoc) => {
+      await deleteDoc(shiftDoc.ref);
+    });
+
+    const permitsQuery = query(
+      collection(db, "permits"),
+      where("userId", "==", personnelId)
+    );
+    const permitsSnapshot = await getDocs(permitsQuery);
+    permitsSnapshot.forEach(async (permitDoc) => {
+      await deleteDoc(permitDoc.ref);
+    });
+
+    const vehiclesQuery = query(
+      collection(db, "vehicles"),
+      where("driverId", "==", personnelId)
+    );
+    const vehiclesSnapshot = await getDocs(vehiclesQuery);
+    vehiclesSnapshot.forEach(async (vehicleDoc) => {
+      await updateDoc(vehicleDoc.ref, {
+        driverId: null,
+      });
+    });
+
+    const userDocRef = doc(db, "users", personnelId);
+    await updateDoc(userDocRef, {
+      role: "deleted",
+    });
+
+    return true;
+  } catch (error) {
+    console.error("Kullanıcı silinirken bir hata oluştu:", error);
     return false;
   }
 };

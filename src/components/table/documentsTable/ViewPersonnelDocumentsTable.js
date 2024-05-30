@@ -20,8 +20,12 @@ import {
 import SortIcon from "@mui/icons-material/Sort";
 import DeleteIcon from "@mui/icons-material/Delete";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import { deleteCompanyDocument } from "../../../config/firebase";
 
-export default function ViewPersonnelDocumentsTable({ documents, confirmDocumentsTrigger }) {
+export default function ViewPersonnelDocumentsTable({
+  documents,
+  confirmDocumentsTrigger,
+}) {
   const [documentsData, setDocumentsData] = useState(documents);
   const [page, setPage] = useState(0);
   const [sortBy, setSortBy] = useState("userName");
@@ -43,7 +47,8 @@ export default function ViewPersonnelDocumentsTable({ documents, confirmDocument
   const sortedDocuments = [...documentsData].sort((a, b) => {
     let comparison = 0;
     if (sortBy === "createdTime") {
-      comparison = a.documentData.createdTime.seconds - b.documentData.createdTime.seconds;
+      comparison =
+        a.documentData.createdTime.seconds - b.documentData.createdTime.seconds;
     } else {
       comparison = a.userData[sortBy].localeCompare(b.userData[sortBy]);
     }
@@ -55,10 +60,10 @@ export default function ViewPersonnelDocumentsTable({ documents, confirmDocument
     page * rowsPerPage + rowsPerPage
   );
 
-  const handleDeleteDocument = async (documentId) => {
+  const handleDeleteDocument = async (documentId, documentURL) => {
     try {
       if (documentId) {
-        // await deleteDocument(documentId);
+        await deleteCompanyDocument(documentId, documentURL);
         handleUpdateDocumentDatas(documentId);
         handleClose();
         console.log("Document silindi " + documentId);
@@ -70,7 +75,9 @@ export default function ViewPersonnelDocumentsTable({ documents, confirmDocument
 
   const handleUpdateDocumentDatas = (documentId) => {
     if (documentId) {
-      const updatedDocuments = documentsData.filter((doc) => doc.documentData.id !== documentId);
+      const updatedDocuments = documentsData.filter(
+        (doc) => doc.documentData.id !== documentId
+      );
       setDocumentsData(updatedDocuments);
     }
   };
@@ -126,9 +133,7 @@ export default function ViewPersonnelDocumentsTable({ documents, confirmDocument
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>
-                Resim
-              </TableCell>
+              <TableCell>Resim</TableCell>
               <TableCell>
                 İsim
                 <IconButton size="small" onClick={() => handleSort("userName")}>
@@ -137,7 +142,10 @@ export default function ViewPersonnelDocumentsTable({ documents, confirmDocument
               </TableCell>
               <TableCell>
                 Soyisim
-                <IconButton size="small" onClick={() => handleSort("userSurname")}>
+                <IconButton
+                  size="small"
+                  onClick={() => handleSort("userSurname")}
+                >
                   <SortIcon />
                 </IconButton>
               </TableCell>
@@ -149,16 +157,15 @@ export default function ViewPersonnelDocumentsTable({ documents, confirmDocument
               </TableCell>
               <TableCell>
                 Oluşturulma Tarihi
-                <IconButton size="small" onClick={() => handleSort("createdTime")}>
+                <IconButton
+                  size="small"
+                  onClick={() => handleSort("createdTime")}
+                >
                   <SortIcon />
                 </IconButton>
               </TableCell>
-              <TableCell>
-                Belge Tipi
-              </TableCell>
-              <TableCell>
-                Detay
-              </TableCell>
+              <TableCell>Belge Tipi</TableCell>
+              <TableCell>Detay</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -169,13 +176,19 @@ export default function ViewPersonnelDocumentsTable({ documents, confirmDocument
                   <TableCell>{doc.userData.userName}</TableCell>
                   <TableCell>{doc.userData.userSurname}</TableCell>
                   <TableCell>{doc.documentData.name}</TableCell>
-                  <TableCell>{formatTimestampToDate(doc.documentData.createdTime)}</TableCell>
+                  <TableCell>
+                    {formatTimestampToDate(doc.documentData.createdTime)}
+                  </TableCell>
                   <TableCell>Personel Belgesi</TableCell>
                   <TableCell>
-                    <IconButton onClick={() => openDocument(doc.documentData.documentURL)}>
+                    <IconButton
+                      onClick={() => openDocument(doc.documentData.documentURL)}
+                    >
                       <OpenInNewIcon />
                     </IconButton>
-                    <IconButton onClick={() => handleClickOpen(doc.documentData)}>
+                    <IconButton
+                      onClick={() => handleClickOpen(doc.documentData)}
+                    >
                       <DeleteIcon />
                     </IconButton>
                   </TableCell>
@@ -210,7 +223,15 @@ export default function ViewPersonnelDocumentsTable({ documents, confirmDocument
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Hayır</Button>
-          <Button onClick={() => handleDeleteDocument(selectedDocument.id)} color="primary">
+          <Button
+            onClick={() =>
+              handleDeleteDocument(
+                selectedDocument.id,
+                selectedDocument.documentURL
+              )
+            }
+            color="primary"
+          >
             Evet
           </Button>
         </DialogActions>

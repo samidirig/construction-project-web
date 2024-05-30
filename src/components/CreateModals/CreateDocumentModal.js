@@ -66,11 +66,13 @@ export default function CreateDocumentModal({
           );
           setUsersData(personnels || []);
         } else if (selectedType === "project") {
-          const projects = await getCompanyProjects();
-          setProjectsData(projects || []);
+          getCompanyProjects((projects) => {
+            setProjectsData(projects || []);
+          });
         } else if (selectedType === "worksite") {
-          const worksites = await getCompanyWorksites();
-          setWorksitesData(worksites || []);
+          getCompanyWorksites((worksites) => {
+            setWorksitesData(worksites || []);
+          });
         }
         setSelectedName(null);
         setSelectedProject(null);

@@ -15,7 +15,7 @@ import {
 } from "@mui/material";
 import Image1 from "../../assets/images/worksite_background.PNG";
 import { useWindowSizeWidth } from "../../config/hooks";
-import { deleteWorksite } from "../../config/firebase";
+import { deleteWorksite, updateWorksiteInformation } from "../../config/firebase";
 import { Timestamp } from "firebase/firestore";
 import CreateSpecificDocumentModal from "../CreateModals/CreateSpecificDocumentModal";
 import Calendar from "react-calendar";
@@ -38,29 +38,22 @@ export default function ViewWorksiteDetails({
   const [isFinishCalendarVisible, setIsFinishCalendarVisible] = useState(false);
   const [isCreateDocumentModalOpen, setIsCreateDocumentModalOpen] =
     useState(false);
-  // console.log(selectedStartDate);
-  // console.log("Başlangıç: " + worksiteData.startDate);
-  // console.log("Bitiş: " + worksiteData.finishDate);
-
-  console.log(worksiteData);
 
   const formatTimestampToDate = (timestamp) => {
     const date = new Date(timestamp.seconds * 1000);
-    return date.toISOString().split("T")[0]; // YYYY-MM-DD format
-    // return date.toLocaleDateString();
+    return date.toISOString().split("T")[0];
   };
 
   const handleSaveWorksite = async () => {
     try {
-      // const startDate = Timestamp.fromDate(worksiteData.startDate);
-      // const finishDate = Timestamp.fromDate(worksiteData.finishDate);
-      // await updateWorksiteInformation(
-      //   worksiteData.name,
-      //   startDate,
-      //   finishDate
-      // );
-      console.log("yeni: " + worksiteData);
-      
+      const worksiteId = worksiteData.id;
+      await updateWorksiteInformation(
+        worksiteId,
+        worksiteData.name,
+        worksiteData.startDate,
+        worksiteData.finishDate
+      );
+
       setIsStartCalendarVisible(false);
       setIsFinishCalendarVisible(false);
       setIsEditMode(false);

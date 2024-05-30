@@ -3,13 +3,11 @@ import {
   getCompanyByManagerId,
   getCompanyPersonnels,
   getCompanyTeams,
-  getCompanyWaitingPersonnels,
   getPermitsCompanies,
 } from "../config/firebase";
 import { Button, CircularProgress, Stack, Typography } from "@mui/material";
 import Background1 from "../assets/images/personnel_background.PNG";
 import ConfirmPersonnelTable from "../components/table/personel_table/ConfirmPersonnelTable";
-import { useWindowSizeWidth } from "../config/hooks";
 import {
   orangeButtonContent,
   tableContent,
@@ -21,10 +19,8 @@ import CreateTeamModal from "../components/CreateModals/CreateTeamModal";
 import TopImage from "../components/TopImage";
 
 export default function Personnels() {
-  const windowScreenWidth = useWindowSizeWidth();
   const [personnelData, setPersonnelData] = useState({});
   const [permitsData, setPermitsData] = useState([]);
-  const [waitingPersonnelData, setWaitingPersonnelData] = useState({});
   const [companyData, setCompanyData] = useState({});
   const [teamsData, setTeamsData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -47,27 +43,27 @@ export default function Personnels() {
   }, [confirmationTrigger]);
 
   useEffect(() => {
+    async function fetchData() {
+      try {
+        const teams = await getCompanyTeams();
+        setTeamsData(teams || []);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching teams:", error);
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, [confirmationTrigger]);
+
+  useEffect(() => {
     const fetchData = () => {
       getCompanyPersonnels((personnels) => {
         setPersonnelData(personnels || []);
         setLoading(false);
       });
     };
-
-    fetchData();
-  }, [confirmationTrigger]);
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const teams = await getCompanyTeams();
-        setTeamsData(teams || []);
-      } catch (error) {
-        console.error("Error fetching projects:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
 
     fetchData();
   }, [confirmationTrigger]);
@@ -92,13 +88,14 @@ export default function Personnels() {
     setConfirmationTrigger((prev) => !prev);
   };
 
-  console.log(permitsData);
-  console.log(personnelData);
-
   return (
     <div>
       {/* top image content */}
-      <TopImage imagePath={Background1} companyName={companyData.name} page={"Personeller"} />
+      <TopImage
+        imagePath={Background1}
+        companyName={companyData.name}
+        page={"Personeller"}
+      />
 
       <div
         style={{
@@ -116,7 +113,7 @@ export default function Personnels() {
         <Stack
           sx={{
             zIndex: 2,
-            mt:"20px",
+            mt: "20px",
             display: "flex",
             flexDirection: "row",
             alignItems: "center",
@@ -151,10 +148,14 @@ export default function Personnels() {
           gap: "20px",
           marginTop: "20px",
           marginBottom: "20px",
+          paddingBottom: "30px",
         }}
       >
         {/* personnel teams */}
-        <TeamSlider cardContent={teamsData} />
+        <TeamSlider
+          cardContent={teamsData}
+          confirmationTrigger={() => setConfirmationTrigger((prev) => !prev)}
+        />
 
         {/* personnels table */}
         <Stack

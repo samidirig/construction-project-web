@@ -8,7 +8,6 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  TextField,
   Box,
   Dialog,
   DialogActions,
@@ -24,6 +23,7 @@ import {
   getWorksiteInformationById,
   setPersonelActiveWorksite,
   setPersonelRole,
+  deletePersonnel,
 } from "../../config/firebase";
 import CreateSpecificDocumentModal from "../CreateModals/CreateSpecificDocumentModal";
 
@@ -54,6 +54,21 @@ export default function ViewPersonnelDetails({
     }
   }, [isOpen, viewSelectedPersonnel]);
 
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const activeWorksite = await getWorksiteInformationById(
+          viewSelectedPersonnel.activeWorksite
+        );
+        setWorkingWorksite(activeWorksite || null);
+      } catch (error) {
+        console.error("Error fetching activeWorksite:", error);
+      }
+    }
+
+    fetchData();
+  }, [isOpen, viewSelectedPersonnel]);
+
   const handleDeleteClick = () => {
     setIsDialogOpen(true);
   };
@@ -63,7 +78,7 @@ export default function ViewPersonnelDetails({
   };
 
   const handleConfirmDelete = async () => {
-    // await deletePersonnel(viewSelectedPersonnel.id);
+    await deletePersonnel(viewSelectedPersonnel.id);
     setIsDialogOpen(false);
     onClose();
   };
@@ -198,7 +213,12 @@ export default function ViewPersonnelDetails({
             ) : (
               <Box sx={{ mb: 2 }}>
                 <Typography variant="body1">
-                  <strong>Rol:</strong> {selectedViewRole}
+                  <strong>Rol:</strong>{" "}
+                  {selectedViewRole === "personnel"
+                    ? "Personel"
+                    : selectedViewRole === "driver"
+                    ? "Sürücü"
+                    : ""}
                 </Typography>
               </Box>
             )}
@@ -341,9 +361,9 @@ export default function ViewPersonnelDetails({
                 boxShadow: "0px 0 10px rgba(52, 104, 192, 0.7)",
               },
             }}
-            onClick={() => {}}
+            onClick={handleDeleteClick}
           >
-            Personel Sil
+            Personeli Sil
           </Button>
           <Button
             variant="contained"
@@ -390,7 +410,7 @@ export default function ViewPersonnelDetails({
           </Button>
           <Button
             onClick={handleConfirmDelete}
-            color="rgba(199,0,0, 0.7)"
+            color="primary"
             autoFocus
           >
             Evet

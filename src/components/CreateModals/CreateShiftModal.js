@@ -34,15 +34,25 @@ export default function CreateShiftModal({ isOpen, onClose }) {
   const [snackPositiveMessage, setSnackPositiveMessage] = useState("");
   const [snackNegativeMessage, setSnackNegativeMessage] = useState("");
 
+  // useEffect(() => {
+  //   async function fetchData() {
+  //     try {
+  //       const worksites = await getCompanyWorksites();
+  //       setWorksitesData(worksites || []);
+  //     } catch (error) {
+  //       console.error("Error fetching suppliers:", error);
+  //     }
+  //   }
+  //   fetchData();
+  // }, [isOpen]);
+
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const worksites = await getCompanyWorksites();
+    const fetchData = () => {
+      getCompanyWorksites((worksites) => {
         setWorksitesData(worksites || []);
-      } catch (error) {
-        console.error("Error fetching suppliers:", error);
-      }
-    }
+      });
+    };
+
     fetchData();
   }, [isOpen]);
 

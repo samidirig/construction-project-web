@@ -189,7 +189,7 @@ export const worksiteSliderCardContent = {
 export const teamsCardContent = {
   minWidth: "220px",
   maxWidth: "90%",
-  minHeight: "150px",
+  minHeight: "100px",
   height: "150px",
   backgroundColor: "rgba(255, 152, 67, 0.2)",
   borderRadius: "20px",

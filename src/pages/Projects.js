@@ -53,16 +53,12 @@ export default function Projects() {
   }, [confirmationTrigger]);
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const projects = await getCompanyProjects();
+    const fetchData = () => {
+      getCompanyProjects((projects) => {
         setProjectsData(projects || []);
-      } catch (error) {
-        console.error("Error fetching projects:", error);
-      } finally {
         setLoading(false);
-      }
-    }
+      });
+    };
 
     fetchData();
   }, [confirmationTrigger]);
@@ -85,7 +81,6 @@ export default function Projects() {
     return date.toLocaleDateString();
   };
 
-  console.log(viewSelectedProject);
   const handleButtonClick = (project, modalType) => {
     if (!viewSelectedProject) {
       setViewSelectedProject(viewSelectedProject === project ? null : project);
@@ -198,6 +193,7 @@ export default function Projects() {
         sx={{
           mt: 3,
           p: "1%",
+          pb: "30px",
           display: "flex",
           flexDirection: "row",
           alignItems: "center",

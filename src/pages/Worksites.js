@@ -44,18 +44,26 @@ export default function Worksites() {
 
   useEffect(() => {
     async function fetchData() {
-      const company = await getCompanyByManagerId();
-      setCompanyData(company);
-
       try {
-        const worksites = await getCompanyWorksites();
-        setWorksitesData(worksites || []);
+        const company = await getCompanyByManagerId();
+        setCompanyData(company);  
       } catch (error) {
-        console.error("Error fetching worksites:", error);
+        console.error("Error fetching company:", error);
       } finally {
         setLoading(false);
       }
     }
+
+    fetchData();
+  }, [confirmationTrigger]);
+
+  useEffect(() => {
+    const fetchData = () => {
+      getCompanyWorksites((worksites) => {
+        setWorksitesData(worksites || []);
+        setLoading(false);
+      });
+    };
 
     fetchData();
   }, [confirmationTrigger]);
@@ -247,6 +255,7 @@ export default function Worksites() {
         sx={{
           mt: 2,
           p: "1%",
+          pb: "30px",
           display: "flex",
           flexDirection: "row",
           alignItems: "center",

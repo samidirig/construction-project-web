@@ -1,12 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./createModalStyle.scss";
 import {
-  Autocomplete,
   Button,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
   TextField,
   Typography,
 } from "@mui/material";
@@ -14,10 +9,7 @@ import { buttonContent, orangeButtonContent } from "../../style/utils";
 import {
   createNewDocument,
   getCompanyByManagerId,
-  getCompanyProjects,
-  getCompanyWorksites,
   getDocumentType,
-  getGivenUsersInformationByIds,
   uploadFileToFirebaseStorage,
 } from "../../config/firebase";
 

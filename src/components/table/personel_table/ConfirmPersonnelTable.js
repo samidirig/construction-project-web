@@ -7,6 +7,7 @@ import {
   TableRow,
   TableCell,
   Paper,
+  Avatar,
   TablePagination,
   Typography,
   Button,
@@ -83,9 +84,28 @@ export default function ConfirmPersonnelTable({
     setViewSelectedPersonnel(personnel);
     setIsPersonnelDetailsModalOpen(true);
   };
+
   const handleClosePersonnelDetailsModal = () => {
     setIsPersonnelDetailsModalOpen(false);
     setViewSelectedPersonnel(null);
+  };
+
+  const getAvatarContent = (personnel) => {
+    if (personnel.profileImg && isValidUrl(personnel.profileImg)) {
+      return <Avatar src={personnel.profileImg} />;
+    } else {
+      const initials = `${personnel.userName[0]}${personnel.userSurname[0]}`;
+      return <Avatar>{initials}</Avatar>;
+    }
+  };
+
+  const isValidUrl = (string) => {
+    try {
+      new URL(string);
+      return true;
+    } catch (_) {
+      return false;
+    }
   };
 
   return (
@@ -94,6 +114,7 @@ export default function ConfirmPersonnelTable({
         <Table>
           <TableHead>
             <TableRow>
+              <TableCell></TableCell>
               <TableCell>
                 İsim
                 <IconButton size="small" onClick={() => handleSort("name")}>
@@ -133,6 +154,7 @@ export default function ConfirmPersonnelTable({
           <TableBody>
             {displayedPersonnels.map((personnel, index) => (
               <TableRow key={index}>
+              <TableCell>{getAvatarContent(personnel)}</TableCell>
                 <TableCell>{personnel.name}</TableCell>
                 <TableCell>{personnel.surname}</TableCell>
                 <TableCell>

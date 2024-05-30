@@ -19,6 +19,7 @@ import {
 import SortIcon from "@mui/icons-material/Sort";
 import DeleteIcon from "@mui/icons-material/Delete";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import { deleteCompanyDocument } from "../../../config/firebase";
 
 export default function ViewProjectDocumentsTable({
   documents,
@@ -64,10 +65,10 @@ export default function ViewProjectDocumentsTable({
     page * rowsPerPage + rowsPerPage
   );
 
-  const handleDeleteDocument = async (documentId) => {
+  const handleDeleteDocument = async (documentId, documentURL) => {
     try {
       if (documentId) {
-        // await deleteDocument(documentId);
+        await deleteCompanyDocument(documentId, documentURL);
         handleUpdateDocumentDatas(documentId);
         handleClose();
         console.log("Document silindi " + documentId);
@@ -204,7 +205,12 @@ export default function ViewProjectDocumentsTable({
         <DialogActions>
           <Button onClick={handleClose}>Hayır</Button>
           <Button
-            onClick={() => handleDeleteDocument(selectedDocument.id)}
+            onClick={() =>
+              handleDeleteDocument(
+                selectedDocument.id,
+                selectedDocument.documentURL
+              )
+            }
             color="primary"
           >
             Evet

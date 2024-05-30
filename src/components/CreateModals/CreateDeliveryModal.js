@@ -61,19 +61,30 @@ export default function CreateDeliveryModal({ isOpen, onClose }) {
     fetchData();
   }, [isOpen]);
 
+  // useEffect(() => {
+  //   async function fetchData() {
+  //     try {
+  //       if (selectedSupplier) {
+  //         const worksites = await getCompanyWorksites();
+  //         setWorksitesData(worksites || []);
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching worksites:", error);
+  //     } finally {
+  //       setLoadingContent(false);
+  //     }
+  //   }
+  //   fetchData();
+  // }, [selectedSupplier]);
+
   useEffect(() => {
-    async function fetchData() {
-      try {
-        if (selectedSupplier) {
-          const worksites = await getCompanyWorksites();
-          setWorksitesData(worksites || []);
-        }
-      } catch (error) {
-        console.error("Error fetching worksites:", error);
-      } finally {
-        setLoadingContent(false);
-      }
-    }
+    const fetchData = () => {
+      getCompanyWorksites((worksites) => {
+        setWorksitesData(worksites || []);
+        setLoading(false);
+      });
+    };
+
     fetchData();
   }, [selectedSupplier]);
 

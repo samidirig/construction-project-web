@@ -177,8 +177,9 @@ export default function Deliveries() {
       <Stack
         sx={{
           ...mainContent,
-          height: windowScreenWidth > 1150 ? 400 : 500,
+          height: "auto",
           flexWrap: windowScreenWidth > 1150 ? "nowrap" : "wrap",
+          pb: "30px",
         }}
       >
         {/* delivery table */}
