@@ -15,12 +15,16 @@ import {
 } from "@mui/material";
 import Image1 from "../../assets/images/worksite_background.PNG";
 import { useWindowSizeWidth } from "../../config/hooks";
-import { deleteWorksite, updateWorksiteInformation } from "../../config/firebase";
+import {
+  deleteWorksite,
+  updateWorksiteInformation,
+} from "../../config/firebase";
 import { Timestamp } from "firebase/firestore";
 import CreateSpecificDocumentModal from "../CreateModals/CreateSpecificDocumentModal";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import UploadImageModal from "../UploadImageModal";
 
 export default function ViewWorksiteDetails({
   isOpen,
@@ -36,6 +40,8 @@ export default function ViewWorksiteDetails({
   const windowScreenWidth = useWindowSizeWidth();
   const [isStartCalendarVisible, setIsStartCalendarVisible] = useState(false);
   const [isFinishCalendarVisible, setIsFinishCalendarVisible] = useState(false);
+  const [isWorksitePhotoModalOpen, setIsWorksitePhotoModalOpen] =
+    useState(false);
   const [isCreateDocumentModalOpen, setIsCreateDocumentModalOpen] =
     useState(false);
 
@@ -124,14 +130,19 @@ export default function ViewWorksiteDetails({
         >
           <div className="view-modal-image-content">
             <img
-              src={worksiteData.worksiteImg || Image1}
+              src={
+                worksiteData.worksiteImage &&
+                worksiteData.worksiteImage.startsWith("https")
+                  ? worksiteData.worksiteImage
+                  : Image1
+              }
               alt="Worksite"
               className="view-modal-image-self"
             />
             {isEditMode && (
               <Button
                 variant="contained"
-                onClick={() => {}}
+                onClick={() => setIsWorksitePhotoModalOpen(true)}
                 sx={{
                   ...orangeButtonContent,
                   bgcolor: "rgba(134, 167, 252, 0.9)",
@@ -422,6 +433,13 @@ export default function ViewWorksiteDetails({
           selectedUser={null}
         />
       )}
+
+      <UploadImageModal
+        isOpen={isWorksitePhotoModalOpen}
+        onClose={() => setIsWorksitePhotoModalOpen(false)}
+        type="worksite"
+        id={worksiteData.id}
+      />
     </div>
   );
 }

@@ -69,7 +69,7 @@ export const register = createAsyncThunk("auth/register", async (userData, { rej
             surname,
             id: user.uid,
             createdTime: signupDate,
-            role: 'companyManager'
+            role: 'visor'
         };
         console.log(setUser);
         console.log(user);

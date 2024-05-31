@@ -108,16 +108,12 @@ export default function CreateWorksiteModal({ isOpen, onClose }) {
   }, [isOpen]);
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const projects = await getCompanyProjects();
+    const fetchData = () => {
+      getCompanyProjects((projects) => {
         setProjectsData(projects || []);
-      } catch (error) {
-        console.error("Error fetching projects:", error);
-      } finally {
         setLoading(false);
-      }
-    }
+      });
+    };
 
     fetchData();
   }, [isOpen]);

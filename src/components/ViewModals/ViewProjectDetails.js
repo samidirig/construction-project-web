@@ -25,6 +25,7 @@ import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import { Timestamp } from "firebase/firestore";
+import UploadImageModal from "../UploadImageModal";
 
 export default function ViewProjectDetails({
   isOpen,
@@ -42,6 +43,7 @@ export default function ViewProjectDetails({
   const [tempProjectData, setTempProjectData] = useState(null);
   const [isStartCalendarVisible, setIsStartCalendarVisible] = useState(false);
   const [isFinishCalendarVisible, setIsFinishCalendarVisible] = useState(false);
+  const [isProjectPhotoModalOpen, setIsProjectPhotoModalOpen] = useState(false);
 
   const formatTimestampToDate = (timestamp) => {
     const date = new Date(timestamp.seconds * 1000); // Assuming timestamp is a Firestore timestamp
@@ -129,14 +131,20 @@ export default function ViewProjectDetails({
         >
           <div className="view-modal-image-content">
             <img
-              src={projectData.projectImage || Image1}
-              alt="Project"
+              src={
+                projectData.projectImage &&
+                projectData.projectImage.startsWith("https")
+                  ? projectData.projectImage
+                  : Image1
+              }
+              alt="Worksite"
               className="view-modal-image-self"
             />
+
             {isEditMode && (
               <Button
                 variant="contained"
-                onClick={() => {}}
+                onClick={() => setIsProjectPhotoModalOpen(true)}
                 sx={{
                   ...orangeButtonContent,
                   bgcolor: "rgba(134, 167, 252, 0.9)",
@@ -453,6 +461,13 @@ export default function ViewProjectDetails({
           selectedUser={null}
         />
       )}
+
+      <UploadImageModal
+        isOpen={isProjectPhotoModalOpen}
+        onClose={() => setIsProjectPhotoModalOpen(false)}
+        type="project"
+        id={projectData.id}
+      />
     </div>
   );
 }

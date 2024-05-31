@@ -82,6 +82,39 @@ export const addCompanyWithUser = async (userData, companyData) => {
   }
 };
 
+export const addVisorCompanyWithUser = async (userData, companyData) => {
+  try {
+    const userId = userData.id;
+    const companyCollectionRef = collection(db, "visorCompanies");
+    const userDocRef = doc(db, "companyVisors", userId);
+    const companyDocRef = await addDoc(companyCollectionRef, companyData);
+    const companyId = companyDocRef.id;
+    const updatedUserData = {
+      ...userData,
+      id: userId,
+      role: "visor",
+      visorCompany: companyId,
+      profileImage: null,
+    };
+
+    await setDoc(userDocRef, updatedUserData);
+
+    const updatedCompanyData = {
+      ...companyData,
+      id: companyId,
+      managerId: userId,
+      profileImage: null,
+    };
+
+    await setDoc(doc(db, "visorCompanies", companyId), updatedCompanyData);
+
+    return userData;
+  } catch (error) {
+    console.error("Kullanıcı eklenirken bir hata oluştu:", error);
+    throw new Error("Kullanıcı eklenirken bir hata oluştu.");
+  }
+};
+
 export const getAuthUserInformation = async () => {
   try {
     const userId = auth.currentUser;
@@ -105,6 +138,33 @@ export const getAuthUserInformation = async () => {
   } catch (error) {
     console.error("Error getting user information:", error);
     return null;
+  }
+};
+
+export const getVisorAuthUserInformation = (callback) => {
+  try {
+    const userId = auth.currentUser;
+
+    if (userId) {
+      const userRef = doc(db, "companyVisors", userId.uid);
+
+      onSnapshot(userRef, (userSnapshot) => {
+        if (userSnapshot.exists()) {
+          const userData = userSnapshot.data();
+          console.log(userData);
+          callback(userData); // Callback ile frontend'e verileri gönder
+        } else {
+          console.log("User data does not exist");
+          callback(null); // Callback ile frontend'e null gönder
+        }
+      });
+    } else {
+      console.log("User is not authenticated");
+      callback(null); // Callback ile frontend'e null gönder
+    }
+  } catch (error) {
+    console.error("Error getting user information:", error);
+    callback(null); // Callback ile frontend'e null gönder
   }
 };
 
@@ -138,6 +198,69 @@ export const getCompanyByManagerId = async () => {
   }
 };
 
+export const getVisorCompanyByManagerId = (callback) => {
+  try {
+    const user = auth.currentUser;
+
+    if (user) {
+      const managerId = user.uid;
+      const companiesRef = collection(db, "visorCompanies");
+      const companiesQuery = query(companiesRef, where("managerId", "==", managerId));
+
+      onSnapshot(companiesQuery, (querySnapshot) => {
+        if (!querySnapshot.empty) {
+          const companyDoc = querySnapshot.docs[0];
+          const companyData = companyDoc.data();
+          callback(companyData); // Callback ile frontend'e verileri gönder
+        } else {
+          console.log("No company found for the given managerId");
+          callback(null); // Callback ile frontend'e null gönder
+        }
+      });
+    } else {
+      console.log("User is not authenticated");
+      callback(null); // Callback ile frontend'e null gönder
+    }
+  } catch (error) {
+    console.error("Error getting visorCompany information:", error);
+    callback(null); // Callback ile frontend'e null gönder
+  }
+};
+
+export const getVisorCompanies = async (callback) => {
+  try {
+    const user = auth.currentUser;
+
+    if (user) {
+      const companiesRef = collection(db, "companies");
+
+      // onSnapshot ile real-time güncellemeleri dinle
+      const unsubscribe = onSnapshot(
+        companiesRef,
+        (snapshot) => {
+          const companiesList = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          callback(companiesList);
+        },
+        (error) => {
+          console.error("Error getting company information:", error);
+        }
+      );
+
+      // Unsubscribe fonksiyonunu döndürerek dinleyiciyi durdurma seçeneği sun
+      return unsubscribe;
+    } else {
+      console.log("User is not authenticated");
+      return null;
+    }
+  } catch (error) {
+    console.error("Error getting company information:", error);
+    return null;
+  }
+};
+
 export const getCompanyIdByAuthUser = async () => {
   try {
     const userId = auth.currentUser;
@@ -160,6 +283,32 @@ export const getCompanyIdByAuthUser = async () => {
     }
   } catch (error) {
     console.error("Error getting companyId:", error);
+    return null;
+  }
+};
+
+export const getVisorCompanyIdByAuthUser = async () => {
+  try {
+    const userId = auth.currentUser;
+
+    if (userId) {
+      const userRef = doc(db, "companyVisors", userId.uid);
+      const userSnapshot = await getDoc(userRef);
+
+      if (userSnapshot.exists()) {
+        const userData = userSnapshot.data();
+        console.log(userData.visorCompany);
+        return userData.visorCompany;
+      } else {
+        console.log("User data does not exist");
+        return null;
+      }
+    } else {
+      console.log("User is not authenticated");
+      return null;
+    }
+  } catch (error) {
+    console.error("Error getting visorCompany:", error);
     return null;
   }
 };
@@ -279,6 +428,22 @@ export const checkCompanyByUserEmail = async (email) => {
   }
 };
 
+export const checkVisorCompanyByUserEmail = async (email) => {
+  try {
+    const q = query(
+      collection(db, "visorCompanies"),
+      where("managerEmail", "==", email)
+    );
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) return true;
+    else return false;
+  } catch (error) {
+    console.error("Company Visor sorgulanırken bir hata oluştu:", error);
+    return false;
+  }
+};
+
 export const getUserRoleByEmail = async (email) => {
   try {
     const q = query(collection(db, "users"), where("email", "==", email));
@@ -290,6 +455,31 @@ export const getUserRoleByEmail = async (email) => {
       if (userRole) {
         console.log("Kullanıcı role:", userRole);
         return userRole === "companyManager" || userRole === "devManager";
+      }
+    }
+
+    console.log("Kullanıcı bulunamadı veya rol bilgisi eksik.");
+    return false;
+  } catch (error) {
+    console.error("Kullanıcı rolü sorgulanırken bir hata oluştu:", error);
+    return false;
+  }
+};
+
+export const getVisorUserRoleByEmail = async (email) => {
+  try {
+    const q = query(
+      collection(db, "companyVisors"),
+      where("email", "==", email)
+    );
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      const userDocSnapshot = querySnapshot.docs[0];
+      const userRole = userDocSnapshot.data().role;
+      if (userRole) {
+        console.log("Kullanıcı role:", userRole);
+        return userRole === "visor" || userRole === "devManager";
       }
     }
 
@@ -327,6 +517,22 @@ export const updateUserInformation = async (name, surname, phone) => {
   }
 };
 
+export const updateVisorUserInformation = async (name, surname, phone) => {
+  try {
+    const userId = auth.currentUser;
+    const userRef = doc(db, "companyVisors", userId.uid);
+    await updateDoc(userRef, {
+      name,
+      surname,
+      phone,
+    });
+    console.log("User information updated successfully.");
+  } catch (error) {
+    console.error("Error updating university information:", error);
+    throw error;
+  }
+};
+
 // export const updatePhotoInformation = async (companyId, userId, projectId, worksiteId, selectedFile) => {
 //   try {
 //     const userId = auth.currentUser;
@@ -350,6 +556,26 @@ export const updateCompanyInformation = async (
 ) => {
   try {
     const companyRef = doc(db, "companies", companyId);
+    await updateDoc(companyRef, {
+      name,
+      email,
+      phone,
+    });
+    console.log("Company information updated successfully.");
+  } catch (error) {
+    console.error("Error updating university information:", error);
+    throw error;
+  }
+};
+
+export const updateVisorCompanyInformation = async (
+  companyId,
+  name,
+  email,
+  phone
+) => {
+  try {
+    const companyRef = doc(db, "visorCompanies", companyId);
     await updateDoc(companyRef, {
       name,
       email,
@@ -526,6 +752,43 @@ export const getCompanyTypeDocuments = async (documentTypeName) => {
     const companyId = company.id;
 
     const documentTypeId = await getDocumentType(documentTypeName);
+
+    if (companyId && documentTypeId) {
+      const documentsRef = collection(db, "documents");
+      const querySnapshot = await getDocs(
+        query(
+          documentsRef,
+          where("companyId", "==", companyId),
+          where("documentType", "==", documentTypeId)
+        )
+      );
+
+      if (!querySnapshot.empty) {
+        const documentsDocs = querySnapshot.docs;
+
+        const documentsData = documentsDocs.map((doc) => doc.data());
+
+        console.log("documents Data:", documentsData);
+        return documentsData;
+      } else {
+        console.log(
+          "No documents found for the given companyId and documentType"
+        );
+        return null;
+      }
+    } else {
+      console.log("Invalid companyId or documentTypeId.");
+      return null;
+    }
+  } catch (error) {
+    console.error("Error getting documents information:", error);
+    return null;
+  }
+};
+
+export const getCompanyDocuments = async (companyId) => {
+  try {
+    const documentTypeId = await getDocumentType("company");
 
     if (companyId && documentTypeId) {
       const documentsRef = collection(db, "documents");
@@ -1039,10 +1302,13 @@ export const deleteWorksiteShift = async (shiftId) => {
 export const getPersonnelNotOnWorksite = async (worksiteId) => {
   try {
     if (worksiteId) {
+      const company = await getCompanyByManagerId();
+      const companyId = company.id;
       // Role "personnel" olan kullanıcıları alıyoruz
       const usersQuery = query(
         collection(db, "users"),
-        where("role", "==", "personnel")
+        where("role", "==", "personnel"),
+        where("companyId", "==", companyId)
       );
 
       const usersSnapshot = await getDocs(usersQuery);
@@ -1531,8 +1797,20 @@ export const getCompanyPersonnels = (callback) => {
           where("role", "in", ["personnel", "driver"])
         );
 
-        onSnapshot(usersQuery, (querySnapshot) => {
-          const personnels = querySnapshot.docs.map((doc) => doc.data());
+        onSnapshot(usersQuery, async (querySnapshot) => {
+          const personnels = await Promise.all(
+            querySnapshot.docs.map(async (doc) => {
+              const personnelData = doc.data();
+              if (personnelData.activeWorksite) {
+                const worksiteInfo = await getWorksiteInformationById(
+                  personnelData.activeWorksite
+                );
+                return { ...personnelData, activeWorksite: worksiteInfo };
+              } else {
+                return personnelData;
+              }
+            })
+          );
           callback(personnels); // Callback ile frontend'e verileri gönder
         });
       } else {
@@ -1896,4 +2174,40 @@ export const deletePersonnel = async (personnelId) => {
   }
 };
 
-//worksite personel atamak için, usersda worksites collectionuna worksiteId, worksitesda da personnels collectionuna user eklenmeli
+export const uploadImage = async (file, path) => {
+  const storage = getStorage();
+  const storageRef = ref(storage, path);
+  await uploadBytes(storageRef, file);
+  return await getDownloadURL(storageRef);
+};
+
+export const updateVisorCompanyProfileImage = async (companyId, imageUrl) => {
+  const companyRef = doc(db, "visorCompanies", companyId);
+  await updateDoc(companyRef, { profileImage: imageUrl });
+};
+
+export const updateVisorUserProfileImage = async (userId, imageUrl) => {
+  const userRef = doc(db, "companyVisors", userId);
+  await updateDoc(userRef, { profileImage: imageUrl });
+};
+
+export const updateCompanyProfileImage = async (companyId, imageUrl) => {
+  const companyRef = doc(db, "companies", companyId);
+  await updateDoc(companyRef, { profileImage: imageUrl });
+};
+
+export const updateUserProfileImage = async (userId, imageUrl) => {
+  const userRef = doc(db, "users", userId);
+  await updateDoc(userRef, { profileImg: imageUrl });
+};
+
+export const updateWorksiteProfileImage = async (worksiteId, imageUrl) => {
+  const worksiteRef = doc(db, "worksites", worksiteId);
+  await updateDoc(worksiteRef, { worksiteImage: imageUrl });
+};
+
+export const updateProjectProfileImage = async (projectId, imageUrl) => {
+  const projectRef = doc(db, "projects", projectId);
+  await updateDoc(projectRef, { projectImage: imageUrl });
+};
+

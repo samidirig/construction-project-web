@@ -29,7 +29,7 @@ export default function CreateDocumentModal({
   const [documentTypes, setDocumentTypes] = useState([
     { key: "project", value: "Proje Belgesi" },
     { key: "worksite", value: "Şantiye Belgesi" },
-    { key: "user", value: "Personel Belgesi" },
+    { key: "personnel", value: "Personel Belgesi" },
     { key: "company", value: "Firma Belgesi" },
   ]);
   const [companyData, setCompanyData] = useState([]);
@@ -60,7 +60,7 @@ export default function CreateDocumentModal({
   useEffect(() => {
     async function fetchData() {
       try {
-        if (selectedType === "user") {
+        if (selectedType === "personnel") {
           const personnels = await getGivenUsersInformationByIds(
             companyData.personnels
           );
@@ -107,7 +107,7 @@ export default function CreateDocumentModal({
           documentURL: null,
           name: selectedName,
           projectId: selectedProject ? selectedProject.id : null,
-          userId: selectedUser ? selectedUser.id : null,
+          userId: selectedUser ? selectedUser.userId : null,
           worksiteId: selectedWorksite ? selectedWorksite.id : null,
         };
 
@@ -116,7 +116,7 @@ export default function CreateDocumentModal({
           const filePath = `documents/${selectedTypeId}/${
             selectedProject?.id ||
             selectedWorksite?.id ||
-            selectedUser?.id ||
+            selectedUser?.userId ||
             companyData?.id
           }/${selectedFile.name}`;
           const fileURL = await uploadFileToFirebaseStorage(
@@ -142,7 +142,7 @@ export default function CreateDocumentModal({
     documentURL: null,
     name: selectedName,
     projectId: selectedProject ? selectedProject.id : null,
-    userId: selectedUser ? selectedUser.id : null,
+    userId: selectedUser ? selectedUser.userId : null,
     worksiteId: selectedWorksite ? selectedWorksite.id : null,
   };
 
@@ -256,7 +256,7 @@ export default function CreateDocumentModal({
             </>
           )}
 
-          {selectedType && selectedType === "user" && (
+          {selectedType && selectedType === "personnel" && (
             <>
               {/* personnel select */}
               <div className="modal-input-content">
@@ -282,8 +282,8 @@ export default function CreateDocumentModal({
                       usersData &&
                       usersData.length > 0 &&
                       usersData.map((user) => (
-                        <MenuItem key={user.id} value={user}>
-                          {user.name}
+                        <MenuItem key={user.userId} value={user}>
+                          {user.userName} {user.userSurname}
                         </MenuItem>
                       ))
                     )}
@@ -376,7 +376,7 @@ export default function CreateDocumentModal({
                   selectedWorksite &&
                   !selectedProject &&
                   !selectedUser) ||
-                (selectedType === "user" &&
+                (selectedType === "personnel" &&
                   companyData.id &&
                   selectedFile &&
                   selectedUser &&

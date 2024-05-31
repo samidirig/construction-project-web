@@ -48,7 +48,7 @@ export default function ViewPersonnelTable({ personnels, worksiteId }) {
       sortBy === "email" ||
       sortBy === "role"
     ) {
-      comparison = a[sortBy].localeCompare(b[sortBy]);
+      comparison = (a[sortBy] || "").localeCompare(b[sortBy] || "");
     } else if (sortBy === "isConfirmedCompany") {
       comparison = a[sortBy] === b[sortBy] ? 0 : a[sortBy] ? -1 : 1;
     }

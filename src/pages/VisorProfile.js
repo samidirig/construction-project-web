@@ -3,11 +3,10 @@ import { useDispatch } from "react-redux";
 import { logOut } from "../redux/authSlice";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import {
-  getAuthUserInformation,
-  getCompanyByManagerId,
-  getCompanyTypeDocuments,
-  updateCompanyInformation,
-  updateUserInformation,
+  getVisorAuthUserInformation,
+  getVisorCompanyByManagerId,
+  updateVisorCompanyInformation,
+  updateVisorUserInformation,
 } from "../config/firebase";
 import {
   Dialog,
@@ -20,36 +19,25 @@ import {
   Typography,
   TextField,
   Avatar,
-  CircularProgress,
 } from "@mui/material";
-import {
-  orangeButtonContent,
-  tableContent,
-  tableContentHeader,
-} from "../style/utils";
-import Background1 from "../assets/images/profile_background.PNG";
+import { orangeButtonContent } from "../style/utils";
+import Background1 from "../assets/images/visorProfile_background.PNG";
 import { useWindowSizeWidth } from "../config/hooks";
-import CreateSpecificDocumentModal from "../components/CreateModals/CreateSpecificDocumentModal";
-import ViewCompanyDocumentsTable from "../components/table/documentsTable/ViewCompanyDocumentsTable";
 import UploadImageModal from "../components/UploadImageModal";
 
-export default function Profile() {
+export default function VisorProfile() {
   const dispatch = useDispatch();
   const [userData, setUserData] = useState({});
   const [tempUserData, setTempUserData] = useState({});
   const [companyData, setCompanyData] = useState({});
-  const [companyDocuments, setCompanyDocuments] = useState([]);
   const [tempCompanyData, setTempCompanyData] = useState({});
   const [isEditMode, setIsEditMode] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [confirmationTrigger, setConfirmationTrigger] = useState(false);
   const [confirmSignOutDialogOpen, setConfirmSignOutDialogOpen] =
     useState(false);
+  const [isCompanyModalOpen, setIsCompanyModalOpen] = useState(false);
+  const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const windowScreenWidth = useWindowSizeWidth();
-  const [isCreateDocumentModalOpen, setIsCreateDocumentModalOpen] =
-    useState(false);
-  const [isUserPhotoModalOpen, setIsUserPhotoModalOpen] = useState(false);
-  const [isCompanyPhotoModalOpen, setIsCompanyPhotoModalOpen] = useState(false);
 
   const handleLogout = () => {
     setConfirmSignOutDialogOpen(true);
@@ -61,50 +49,28 @@ export default function Profile() {
   };
 
   useEffect(() => {
-    async function fetchUserData() {
-      try {
-        const user = await getAuthUserInformation();
-        setUserData(user);
-      } catch (error) {
-        console.error("Error fetching documents:", error);
-      } finally {
+    const fetchData = () => {
+      getVisorAuthUserInformation((user) => {
+        setUserData(user || []);
         setLoading(false);
-      }
-    }
-    fetchUserData();
+      });
+    };
+
+    fetchData();
   }, []);
 
   useEffect(() => {
-    async function fetchCompanyData() {
-      try {
-        const company = await getCompanyByManagerId();
-        setCompanyData(company);
-      } catch (error) {
-        console.error("Error fetching documents:", error);
-      } finally {
+    const fetchData = () => {
+      getVisorCompanyByManagerId((visorCompany) => {
+        setCompanyData(visorCompany || []);
         setLoading(false);
-      }
-    }
-    fetchCompanyData();
-  }, []);
+      });
 
-  useEffect(() => {
-    async function fetchCompanyDocuments() {
-      try {
-        const documents = await getCompanyTypeDocuments("company");
-        const companyDocs = documents.map((doc) => ({
-          companyData: companyData,
-          documentData: doc,
-        }));
-        setCompanyDocuments(companyDocs);
-      } catch (error) {
-        console.error("Error fetching documents:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchCompanyDocuments();
-  }, [confirmationTrigger]);
+      localStorage.setItem("companyId", companyData.id);
+    };
+
+    fetchData();
+  }, []);
 
   const handleSaveProfile = async () => {
     try {
@@ -112,8 +78,8 @@ export default function Profile() {
       if (phone && !phone.startsWith("90")) {
         phone = `90${phone}`;
       }
-      await updateUserInformation(userData.name, userData.surname, phone);
-      await updateCompanyInformation(
+      await updateVisorUserInformation(userData.name, userData.surname, phone);
+      await updateVisorCompanyInformation(
         companyData.id,
         companyData.name,
         companyData.email,
@@ -143,20 +109,12 @@ export default function Profile() {
     setIsEditMode(false);
   };
 
-  const handleOpenCreateDocumentModal = () => {
-    setIsCreateDocumentModalOpen(true);
-  };
-
-  const handleCloseCreateDocumentModal = () => {
-    setIsCreateDocumentModalOpen(false);
-  };
-
   const getAvatarContent = (user) => {
     if (user) {
-      if (user.profileImg && isValidUrl(user.profileImg)) {
+      if (user.profileImage && isValidUrl(user.profileImage)) {
         return (
           <Avatar
-            src={user.profileImg}
+            src={user.profileImage}
             sx={{
               width: 100,
               height: 100,
@@ -266,7 +224,7 @@ export default function Profile() {
                 height: "100%",
                 borderRadius: "50px",
                 background:
-                  "linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.8))",
+                  "linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.9))",
                 zIndex: 2,
               }}
             ></div>
@@ -366,31 +324,6 @@ export default function Profile() {
                     Profili Düzenle
                   </Button>
                 )}
-
-                <Button
-                  variant="contained"
-                  onClick={handleOpenCreateDocumentModal}
-                  sx={{
-                    width: "200px",
-                    height: 40,
-                    textAlign: "center",
-                    bgcolor: "rgba(255, 152, 67, 0.9)",
-                    color: "#fff",
-                    borderRadius: "50px",
-                    fontFamily: "Arial, Helvatica, sans-serif",
-                    fontSize: "14px",
-                    cursor: "pointer",
-                    textTransform: "inherit",
-                    "&:hover": {
-                      bgcolor: "#FF9843",
-                      color: "#ffffff",
-                      boxShadow: "0px 0 10px rgba(52, 104, 192, 0.7)",
-                      transform: "scale(1.05)",
-                    },
-                  }}
-                >
-                  Firma Belgesi Oluştur
-                </Button>
 
                 <Button
                   variant="contained"
@@ -537,7 +470,7 @@ export default function Profile() {
                     {isEditMode && (
                       <Button
                         variant="contained"
-                        onClick={() => setIsCompanyPhotoModalOpen(true)}
+                        onClick={() => setIsCompanyModalOpen(true)}
                         sx={{
                           ...orangeButtonContent,
                           bgcolor: "rgba(134, 167, 252, 0.9)",
@@ -698,14 +631,12 @@ export default function Profile() {
                     }}
                   >
                     <Typography variant="h6" sx={{ color: "grey" }}>
-                      {userData.role === "companyManager"
-                        ? "Yönetici"
-                        : "Belirsiz"}
+                      {userData.role === "visor" ? "Denetleyici" : "Belirsiz"}
                     </Typography>
                     {isEditMode && (
                       <Button
                         variant="contained"
-                        onClick={() => setIsUserPhotoModalOpen(true)}
+                        onClick={() => setIsUserModalOpen(true)}
                         sx={{
                           ...orangeButtonContent,
                           bgcolor: "rgba(134, 167, 252, 0.9)",
@@ -806,73 +737,24 @@ export default function Profile() {
                 </Stack>
               </Stack>
             </Stack>
-
-            {/* middle table content */}
-            <Stack
-              sx={{
-                ...tableContent,
-                width: "100%",
-              }}
-            >
-              <Stack sx={tableContentHeader}>
-                <Typography variant="h5" sx={{ color: "#fff" }}>
-                  Firma Belgeleri
-                </Typography>
-              </Stack>
-
-              {loading ? (
-                <CircularProgress sx={{ mt: 20 }} size={50} />
-              ) : (
-                <Stack
-                  sx={{
-                    position: "relative",
-                    alignItems: "center",
-                    top: "65px",
-                  }}
-                >
-                  {companyDocuments.length > 0 ? (
-                    <ViewCompanyDocumentsTable
-                      documents={companyDocuments}
-                      confirmDocumentsTrigger={() => {
-                        setConfirmationTrigger((prev) => !prev);
-                      }}
-                    />
-                  ) : (
-                    <Typography marginTop={10}>
-                      Firmanıza ait mevcut Dökümanlar bulunamadı.
-                    </Typography>
-                  )}
-                </Stack>
-              )}
-            </Stack>
           </Stack>
         </div>
       </div>
 
-      {/* document create modal */}
-      {isCreateDocumentModalOpen && (
-        <CreateSpecificDocumentModal
-          isOpen={isCreateDocumentModalOpen}
-          onClose={handleCloseCreateDocumentModal}
-          documentType={"company"}
-          selectedProject={null}
-          selectedWorksite={null}
-          selectedUser={null}
-        />
-      )}
-
+      {/* Firma Fotoğraf Güncelleme Modali */}
       <UploadImageModal
-        isOpen={isUserPhotoModalOpen}
-        onClose={() => setIsUserPhotoModalOpen(false)}
-        type="user"
-        id={userData.id}
+        isOpen={isCompanyModalOpen}
+        onClose={() => setIsCompanyModalOpen(false)}
+        type="visorCompany"
+        id={companyData.id}
       />
 
+      {/* Yönetici Fotoğraf Güncelleme Modali */}
       <UploadImageModal
-        isOpen={isCompanyPhotoModalOpen}
-        onClose={() => setIsCompanyPhotoModalOpen(false)}
-        type="company"
-        id={companyData.id}
+        isOpen={isUserModalOpen}
+        onClose={() => setIsUserModalOpen(false)}
+        type="visorUser"
+        id={userData.id}
       />
     </div>
   );

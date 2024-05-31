@@ -31,17 +31,17 @@ export default function CreateTeamModal({ isOpen, onClose }) {
   const [snackPositiveMessage, setSnackPositiveMessage] = useState("");
   const [snackNegativeMessage, setSnackNegativeMessage] = useState("");
 
-  // useEffect(() => {
-  //   async function fetchData() {
-  //     try {
-  //       const company = await getCompanyIdByAuthUser();
-  //       setCompanyId(company);
-  //     } catch (error) {
-  //       console.error("Error fetching suppliers:", error);
-  //     }
-  //   }
-  //   fetchData();
-  // }, [isOpen]);
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const company = await getCompanyIdByAuthUser();
+        setCompanyId(company);
+      } catch (error) {
+        console.error("Error fetching suppliers:", error);
+      }
+    }
+    fetchData();
+  }, [isOpen]);
 
   useEffect(() => {
     const fetchData = () => {

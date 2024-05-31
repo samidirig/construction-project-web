@@ -94,7 +94,7 @@ export default function ConfirmPersonnelTable({
     if (personnel.profileImg && isValidUrl(personnel.profileImg)) {
       return <Avatar src={personnel.profileImg} />;
     } else {
-      const initials = `${personnel.userName[0]}${personnel.userSurname[0]}`;
+      const initials = `${personnel.name[0]}${personnel.surname[0]}`;
       return <Avatar>{initials}</Avatar>;
     }
   };
@@ -107,7 +107,7 @@ export default function ConfirmPersonnelTable({
       return false;
     }
   };
-
+  console.log(personnels);
   return (
     <div style={{ width: "100%" }}>
       <TableContainer component={Paper}>
@@ -140,6 +140,12 @@ export default function ConfirmPersonnelTable({
                 </IconButton>
               </TableCell>
               <TableCell>
+                Aktif Şantiye
+                <IconButton size="small" onClick={() => handleSort("email")}>
+                  <SortIcon />
+                </IconButton>
+              </TableCell>
+              <TableCell>
                 Personel Statü
                 <IconButton
                   size="small"
@@ -154,7 +160,7 @@ export default function ConfirmPersonnelTable({
           <TableBody>
             {displayedPersonnels.map((personnel, index) => (
               <TableRow key={index}>
-              <TableCell>{getAvatarContent(personnel)}</TableCell>
+                <TableCell>{getAvatarContent(personnel)}</TableCell>
                 <TableCell>{personnel.name}</TableCell>
                 <TableCell>{personnel.surname}</TableCell>
                 <TableCell>
@@ -165,6 +171,15 @@ export default function ConfirmPersonnelTable({
                     : "Diğer"}
                 </TableCell>
                 <TableCell>{personnel.email}</TableCell>
+                <TableCell
+                  sx={{
+                    color: personnel.activeWorksite ? "green" : "red",
+                  }}
+                >
+                  {personnel.activeWorksite
+                    ? personnel.activeWorksite.name
+                    : "Aktif Şantiye Bulunmamaktadır."}
+                </TableCell>
                 <TableCell>
                   <Typography
                     style={{
